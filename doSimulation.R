@@ -80,21 +80,21 @@ doSimulation <- function(data, cut, idx, window_size, window_step, save_filename
     }
     
     p <- c(epoch,start_milli,end_milli,label,
-           getFeature(window_df,"mean"),
-           getFeature(window_df,"entropy"),   
-           #         getFeature(window_df,"energy"), # variance 사실상 비슷
-           getFeature(window_df,"correlation"),
-           getFeature(window_df,"autocorrelation",12),
+           getFeatureBy(window_df,"mean"),
+           getFeatureBy(window_df,"entropy"),   
+           #         getFeatureBy(window_df,"energy"), # variance 사실상 비슷
+           getFeatureBy(window_df,"correlation"),
+           getFeatureBy(window_df,"autocorrelation",12),
            ##
-           #       getFeature(window_df,"threshold",avg = TRUE),
-           #       getFeature(window_df,"autocorrelation", 1, avg = TRUE),
-           #       getFeature(window_df,"variance", avg = TRUE),
-           #       getFeature(window_df,"peakfreq", avg = TRUE),
+           #       getFeatureBy(window_df,"threshold",avg = TRUE),
+           #       getFeatureBy(window_df,"autocorrelation", 1, avg = TRUE),
+           #       getFeatureBy(window_df,"variance", avg = TRUE),
+           #       getFeatureBy(window_df,"peakfreq", avg = TRUE),
            
-           getFeature(window_df,"threshold",avg = FALSE),
-           getFeature(window_df,"autocorrelation", 1, avg = FALSE),
-           #       getFeature(window_df,"variance", avg = FALSE),
-           getFeature(window_df,"peakfreq", avg = FALSE)
+           getFeatureBy(window_df,"threshold",avg = FALSE),
+           getFeatureBy(window_df,"autocorrelation", 1, avg = FALSE),
+           #       getFeatureBy(window_df,"variance", avg = FALSE),
+           getFeatureBy(window_df,"peakfreq", avg = FALSE)
     )
     
     window_set<-rbind(window_set,p)
@@ -102,8 +102,8 @@ doSimulation <- function(data, cut, idx, window_size, window_step, save_filename
     window_idx <- window_idx + window_step
   }
   window_set <- window_set[-1,]
-  View(window_set)
-  write.csv(window_set, file=paste(save_filename,".csv",sep=""), row.names=T)
+  #View(window_set)
+  write.csv(window_set, file=paste("./data_csv/",save_filename,".csv",sep=""), row.names=T)
   print(paste("* window_num",window_num))
   print(paste("* saved file: ", save_filename,".csv", sep=""))
   

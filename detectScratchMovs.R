@@ -138,32 +138,32 @@ detectScratchMovs <- function(data, idx, graph_title,  window_size, window_step,
     if(var(window_df$saxis)>0.05){
       label<-"TODO"
       p <- c(i, start_milli, end_milli, label,
-             getFeature(window_df,"mean"),
-             getFeature(window_df,"entropy"),   # variance 사실상 비슷
-             #       getFeature(window_df,"energy"),
-             getFeature(window_df,"correlation"),
-             getFeature(window_df,"autocorrelation",12),
+             getFeatureBy(window_df,"mean"),
+             getFeatureBy(window_df,"entropy"),   # variance 사실상 비슷
+             #       getFeatureBy(window_df,"energy"),
+             getFeatureBy(window_df,"correlation"),
+             getFeatureBy(window_df,"autocorrelation",12),
              ##
-             #            getFeature(window_df,"threshold", avg = TRUE),
-             #             getFeature(window_df,"autocorrelation", 1,avg = TRUE),
-             #       getFeature(window_df,"variance",avg = TRUE),
-             #getFeature(window_df,"peakratio"),
-             #             getFeature(window_df,"peakfreq", avg = TRUE),
-             getFeature(window_df,"threshold", avg = FALSE),
-             getFeature(window_df,"autocorrelation", 1,avg = FALSE),
-             #              getFeature(window_df,"variance",avg = TRUE),
-             #getFeature(window_df,"peakratio"),
-             getFeature(window_df,"peakfreq", avg = FALSE)
+             #            getFeatureBy(window_df,"threshold", avg = TRUE),
+             #             getFeatureBy(window_df,"autocorrelation", 1,avg = TRUE),
+             #       getFeatureBy(window_df,"variance",avg = TRUE),
+             #getFeatureBy(window_df,"peakratio"),
+             #             getFeatureBy(window_df,"peakfreq", avg = TRUE),
+             getFeatureBy(window_df,"threshold", avg = FALSE),
+             getFeatureBy(window_df,"autocorrelation", 1,avg = FALSE),
+             #              getFeatureBy(window_df,"variance",avg = TRUE),
+             #getFeatureBy(window_df,"peakratio"),
+             getFeatureBy(window_df,"peakfreq", avg = FALSE)
       )
       
       
-      #      getFeature(window_df,"mean")  ,
-      #       getFeature(window_df,"entropy") ,
-      #       getFeature(window_df,"energy") ,
-      #       getFeature(window_df,"correlation") ,
-      #       getFeature(window_df,"autocorrelation"))
+      #      getFeatureBy(window_df,"mean")  ,
+      #       getFeatureBy(window_df,"entropy") ,
+      #       getFeatureBy(window_df,"energy") ,
+      #       getFeatureBy(window_df,"correlation") ,
+      #       getFeatureBy(window_df,"autocorrelation"))
       
-      #       getFeature(window_df,"peakratio") )
+      #       getFeatureBy(window_df,"peakratio") )
       window_set[nrow(window_set)+1,] <- p
     }else{
       label<-"sleep"
@@ -222,7 +222,7 @@ detectScratchMovs <- function(data, idx, graph_title,  window_size, window_step,
   
   
   if(fileWrite==TRUE){
-    write.csv(window_set, file=paste(graph_title,".csv",sep=""), row.names=T)
+    write.csv(window_set, file=paste("./data_csv/",graph_title,".csv",sep=""), row.names=T)
   }
   
   #print(paste("window_mean_x", typeof(window_set$mean_x) ))
@@ -242,11 +242,11 @@ detectScratchMovs <- function(data, idx, graph_title,  window_size, window_step,
   predictions2 <- predict(model, window_set[,5:(19+6)],type="prob")  # extended previous work
   
   
-  #  View(predictions)
+  View(predictions)
   t<-autolabeling(paste(graph_title,".csv",sep=""), "scratch")
   filter <- "scratch|non|scratch_finger"
   t <- subset(t, grepl(filter, t$label))
-  #  View(t)
+  View(t)
   
   sumres<-1
   if(length(t$label) == length(predictions))

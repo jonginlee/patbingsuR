@@ -22,7 +22,7 @@ autolabeling <- function(filename, labelname, a_label = FALSE )
 {
   #"non_scratch""scratch", "scratch_finger"
   # 3개로 나눠보기
-  data_label<-read.csv(filename)
+  data_label<-read.csv(paste("./data_csv/",filename,sep=""))
   data_label$label <- as.character(data_label$label)
   
   if(a_label == FALSE )
@@ -176,6 +176,26 @@ trans_to_frequency <- function(s1, opt = "no_maxfreq")
   }
 }
 
+
+getDelayedData<-function(data, delay)
+{
+  index <- 1
+  index[1] <- 1
+  for(i in 2:nrow(data))
+  {
+    if( (index[i-1] + delay) > nrow(data) )
+      break
+    index[i] <- index[i-1] + delay
+  }
+  
+  res <- data[index,]
+  View(res)
+  print(nrow(res))
+  return (res)
+}
+
+
+
 smodel <- getAccuracy(c("data_watch20150412_scratching_x",
                         "data_watch20150412_scratching_y",  
                         "data_watch20150412_scratching_z",
@@ -225,7 +245,7 @@ NULL,delay=1
 )
 
 
-smodel3 <- getAccuracy(c(
+smodel3 <- getAccuracyBy(c(
   "data_watch20150412_scratching_x",
   "data_watch20150412_scratching_y",
   "data_watch20150412_scratching_z",
@@ -238,7 +258,7 @@ smodel3 <- getAccuracy(c(
   "data_watch20150412_normal_2",
   "data_watch20150413_normal4",
   "data_watch20150413_normal3"
-), 3, 50*5, 50*5*0.5, FALSE, 0.5, model_name,NULL,
+), 3, window_size, window_step, FALSE, 0.5, model_name,NULL,
 c(
   "data_watch20150412_scratching_no_wrist",
   "data_watch20150412_scratching_no_wrist_2",
@@ -249,8 +269,16 @@ c(
 
 
 
-window_size <- 
-  window_step <- 
+smodel3 <- getAccuracyBy(c(
+  "data_watch20150412_scratching_x"
+),c(
+  "data_watch20150412_normal"
+), 3, 50*3, 50*1, FALSE, 0.5, "J48",NULL,
+c(
+  "data_watch20150412_scratching_no_wrist"
+),delay=1
+)
+
   
   smodel4_2 <- getAccuracy(c(
     "data_watch20150412_scratching_x",
@@ -406,7 +434,7 @@ getDataset <- function(scr_filelist, non_scratch_file,idx, window_size, window_s
     for(i in 1:length(scr_filelist))
     {
       labelname <- scr_filelist[i]
-      data <- read.table(paste("/Users/jonginlee/Documents/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
+      data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
       doSimulation(data, TRUE, idx, window_size, window_stp, labelname, plotting,delay=delay)
       t<-autolabeling(paste(labelname,".csv",sep=""), "scratch")
       
@@ -422,7 +450,7 @@ getDataset <- function(scr_filelist, non_scratch_file,idx, window_size, window_s
     {
       print(i)
       labelname <- non_scratch_file[i]
-      data <- read.table(paste("/Users/jonginlee/Documents/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
+      data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
       doSimulation(data, TRUE, idx, window_size, window_stp, labelname, plotting,delay=delay)
       t<-autolabeling(paste(labelname,".csv",sep=""), "non", TRUE)
       
@@ -437,7 +465,7 @@ getDataset <- function(scr_filelist, non_scratch_file,idx, window_size, window_s
     for(i in 1:length(scr_small_scratching))
     {
       labelname <- scr_small_scratching[i]
-      data <- read.table(paste("/Users/jonginlee/Documents/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
+      data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
       doSimulation(data, TRUE, idx, window_size, window_stp, labelname, plotting,delay=delay)
       t<-autolabeling(paste(labelname,".csv",sep=""),"scratch_finger")
       

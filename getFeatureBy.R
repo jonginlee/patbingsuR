@@ -1,7 +1,7 @@
 
-max<-0
-maxi<-0
-http://www.abecedarical.com/zenosamples/zs_complexnumbers.html
+#max<-0
+#maxi<-0
+#http://www.abecedarical.com/zenosamples/zs_complexnumbers.html
 
 getPeakFrequency <- function(data_z)
 {
@@ -90,7 +90,7 @@ getCth <- function(data_x,th)
 }
 
 
-gettingFeaturesBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, thr = 0.01)
+getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, thr = 0.01)
 {
   res<-0
   switch(feature_type,
