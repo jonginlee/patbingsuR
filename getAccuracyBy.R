@@ -258,7 +258,7 @@ smodel3 <- getAccuracyBy(c(
   "data_watch20150412_normal_2",
   "data_watch20150413_normal4",
   "data_watch20150413_normal3"
-), 3, window_size, window_step, FALSE, 0.5, model_name,NULL,
+), 8, window_size, window_step, FALSE, 0.5, model_name,NULL,
 c(
   "data_watch20150412_scratching_no_wrist",
   "data_watch20150412_scratching_no_wrist_2",
@@ -278,6 +278,13 @@ c(
   "data_watch20150412_scratching_no_wrist"
 ),delay=1
 )
+
+test_data2 <- getDataset(c(
+  "data_watch20150412_scratching_x"
+), c(
+  "data_watch20150412_normal"
+  
+),8, window_size, window_step, FALSE)
 
   
   smodel4_2 <- getAccuracy(c(
@@ -304,7 +311,7 @@ c(
   ), 8, window_size, window_step, FALSE, 0.5, model_name, NULL, NULL,delay=1
   )
 
-smodel4 <- getAccuracy(c(
+smodel4 <- getAccuracyBy(c(
   "data_watch20150412_scratching_x",
   "data_watch20150412_scratching_y",
   "data_watch20150412_scratching_z",
@@ -411,6 +418,8 @@ test_data <- getDataset(c(
   "data_watch20150417_scratchingtest_no1", # 일어나고 - 걷고 - 걸어서오고 - 앉고 - 타이핑(cheolming)
   "data_watch20150417_scratchingtest_no2"  # 일어나고 - 걷고 - 걸어서오고 - 앉고 - 타이핑(junhong)
 ),8, window_size, window_step, FALSE)
+
+
 
 
 predictions <- predict(smodel3_2, test_data[,6:(26)])

@@ -6,10 +6,10 @@ y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity 
 
 createPlot <- function(data, idx, graph_title, saveFile, source_date, 
                          set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ) {
+  data.sub <- data
   if(set_btw){
     data.sub <- subset(data.sub, subset=(data.sub$time > start_hour ))
     data.sub <- subset(data.sub, subset=(data.sub$time < end_hour ))
-    graph_title <- paste(graph_title, "(", start_hour, " ~ ", end_hour, ")")
   }
   
   if(saveFile){  
@@ -19,11 +19,13 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
     #    returnValue
     #    Sys.sleep(1)
     #    dev.off()
-    write.csv(data.sub, file=paste("./data_csv/",graph_title,".csv",sep=""), row.names=T)
+    write.csv(data.sub, file=paste("./data_raw/",graph_title,".txt",sep=""), row.names=T)
   }
   
+  if(set_btw)
+    graph_title <- paste(graph_title, "(", start_hour, " ~ ", end_hour, ")")
   
-  data.sub <- subset(data,grepl(list[idx], data$type))
+  data.sub <- subset(data.sub,grepl(list[idx], data.sub$type))
   
 
   max_value <- (as.integer(max(data.sub$time)))

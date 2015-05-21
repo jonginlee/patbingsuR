@@ -4,10 +4,13 @@
 
 
 
-getMilliFromHMS <- function(hour, minute, second)
+getMilliFromHMS <- function(hour, minute, second, setStartT=FALSE, hour2=0, minute2=0, second2=0)
 {
   time <- 0
   time <- time + hour*60*60 + minute*60 + second
+  
+  if(setStartT)
+    time <- time - (hour2*60*60 + minute2*60 + second2)
   
   return (time*1000)
 }
