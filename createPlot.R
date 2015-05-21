@@ -6,14 +6,26 @@ y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity 
 
 createPlot <- function(data, idx, graph_title, saveFile, source_date, 
                          set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ) {
-  
-  data.sub <- subset(data,grepl(list[idx], data$type))
-  
   if(set_btw){
     data.sub <- subset(data.sub, subset=(data.sub$time > start_hour ))
     data.sub <- subset(data.sub, subset=(data.sub$time < end_hour ))
+    graph_title <- paste(graph_title, "(", start_hour, " ~ ", end_hour, ")")
   }
   
+  if(saveFile){  
+    # TODO
+    #    png(filename=gsub(" ","",paste(graph_title,"_",sensor_name_list[idx],"_",source_date,".png")),
+    #        height=450,width=650)
+    #    returnValue
+    #    Sys.sleep(1)
+    #    dev.off()
+    write.csv(data.sub, file=paste("./data_csv/",graph_title,".csv",sep=""), row.names=T)
+  }
+  
+  
+  data.sub <- subset(data,grepl(list[idx], data$type))
+  
+
   max_value <- (as.integer(max(data.sub$time)))
   spliting <- seq(0,max_value,max_value/10)
   xlablename <- "time (millisecond)"
@@ -150,26 +162,19 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
     
   }
   
-  if(saveFile){  
-    # TODO
-    #    png(filename=gsub(" ","",paste(graph_title,"_",sensor_name_list[idx],"_",source_date,".png")),
-    #        height=450,width=650)
-    #    returnValue
-    #    Sys.sleep(1)
-    #    dev.off()
-  }
+
   
-  max_value <- (max(data.sub$time))
-  min_value <- (min(data.sub$time))
-  range <- max_value - min_value
-  tindex<-1
-  for(i in 0:((range/1000)-1) )
-  {
-    time_i <- min_value + i*1000
-    returnValue <- returnValue + geom_vline(xintercept = time_i, colour="black", alpha=0.8)
-  }
+#  max_value <- (max(data.sub$time))
+#  min_value <- (min(data.sub$time))
+#  range <- max_value - min_value
+#  tindex<-1
+#  for(i in 0:((range/1000)-1) )
+#  {
+#    time_i <- min_value + i*1000
+#    returnValue <- returnValue + geom_vline(xintercept = time_i, colour="black", alpha=0.8)
+#   }
   
-  print(returnValue)
+  #print(returnValue)
   
   
   

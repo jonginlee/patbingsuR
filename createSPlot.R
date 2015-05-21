@@ -1,6 +1,6 @@
 # "/Users/jonginlee/Documents/recorded6.wav"
 # http://samcarcagno.altervista.org/blog/basic-sound-processing-r/
-
+# http://samcarcagno.altervista.org/blog/basic-sound-processing-r/
 
 addr <- "/Users/jonginlee/Documents/recorded0325_1.wav"
 sndObj <- readWave(addr)
@@ -17,7 +17,7 @@ S[S > 10^(-3/10)] <- 10^(-3/10)      # clip above -3 dB.
 image(t(20*log10(S)), axes = FALSE)  #, col = gray(0:255 / 255))
 
 
-createSPlot<-function(addr, set_btw=FALSE, start_milli=0, end_milli=0 )
+createSPlot<-function(addr, title, set_btw=FALSE, start_milli=0, end_milli=0 ,freqprint=FALSE )
 {
   
   sndObj <- readWave(addr)
@@ -25,6 +25,7 @@ createSPlot<-function(addr, set_btw=FALSE, start_milli=0, end_milli=0 )
   s1 <- sndObj@left
   s1 <- s1 / 2^(sndObj@bit -1)
   timeArray <- (0:( length(sndObj@left)-1)) / sndObj@samp.rate
+  View(timeArray)
   df <- data.frame(time_milli = timeArray, amplitude = s1)  
   
   max_value <- (as.integer(max(df$time)))
@@ -34,9 +35,9 @@ createSPlot<-function(addr, set_btw=FALSE, start_milli=0, end_milli=0 )
     df <- subset(df, time_milli > start_milli & time_milli < end_milli)    
   }
   
-  returnValue <- ggplot(df, aes(x=time_milli, y=amplitude)) +
+  returnValue <- ggplot(df, aes(x=time_milli, y=amplitude))  +
     geom_line() +
-    ggtitle(paste("Sound signal")) + 
+    ggtitle(paste("Sound signal", title)) + 
     #  coord_fixed(ratio=1/4) +
     xlab("Time (second)") +
     ylab("Amplitude")+
@@ -49,6 +50,36 @@ createSPlot<-function(addr, set_btw=FALSE, start_milli=0, end_milli=0 )
           axis.text.x = element_text(angle=40,hjust=1,vjust=1))
   
   print(returnValue)
+  
+  if(freqprint)
+  {
+    n <- length(s1)
+    p <- fft(s1)
+    nUniquePts <- ceiling((n+1)/2)
+    p <- p[1:nUniquePts] #select just the first half since the second half 
+    # is a mirror image of the first
+    p <- abs(p)  #take the absolute value, or the magnitude 
+    p <- p / n #scale by the number of points so that
+    # the magnitude does not depend on the length 
+    # of the signal or on its sampling frequency  
+    p <- p^2  # square it to get the power 
+    
+    # multiply by two (see technical document for details)
+    # odd nfft excludes Nyquist point
+    if (n %% 2 > 0){
+      p[2:length(p)] <- p[2:length(p)]*2 # we've got odd number of points fft
+    } else {
+      p[2: (length(p) -1)] <- p[2: (length(p) -1)]*2 # we've got even number of points fft
+    }
+    
+    freqArray <- (0:(nUniquePts-1)) * (sndObj@samp.rate / n) #  create the frequency array 
+    
+    plot(freqArray/1000, 10*log10(p), type='l', col='black', xlab='Frequency (kHz)', ylab='Power (dB)') 
+    
+    rms_val <- sqrt(mean(s1^2))
+    print(rms_val)
+    print(sqrt(sum(p)))
+  }
 }
 
 
