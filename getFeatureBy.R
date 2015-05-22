@@ -92,13 +92,16 @@ getCth <- function(data_x,th)
 
 getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, thr = 0.01)
 {
+ 
   res<-0
+  window_data$mag <- sqrt( (window_data$x+50)^2 + (window_data$y+50)^2 + (window_data$z+50)^2)
+  window_data$avg <- window_data$mag - mean(window_data$mag)
+  
   switch(feature_type,
          threshold={
            g<- 9.81
            #plot(window_data$x, type='l')
            if(avg == TRUE){
-             window_data$avg <- (window_data$x + window_data$y + window_data$z)/3
              res <- c( getCth(window_data$avg,g*thr) )
            }else{
              res <- c(getCth(window_data$x-mean(window_data$x),g*thr), 
@@ -109,7 +112,6 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
          },
          peakfreq={
            if(avg == TRUE){
-             window_data$avg <- (window_data$x + window_data$y + window_data$z)/3
              res <- c(trans_to_frequency(window_data$avg-mean(window_data$avg),"maxfreq"))
            }else{
              res <- c(trans_to_frequency(window_data$x-mean(window_data$x),"maxfreq"), trans_to_frequency(window_data$y-mean(window_data$y),"maxfreq"), trans_to_frequency(window_data$z-mean(window_data$z),"maxfreq"))
@@ -158,22 +160,34 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
          },
          peakratio={
            #View(window_data)
-           Px = trans_to_frequency(window_data$x - mean(window_data$x))
-           Py = trans_to_frequency(window_data$y - mean(window_data$y))
-           Pz = trans_to_frequency(window_data$z - mean(window_data$z))
            
-           n = length(window_data$x)
-           sampling.rate = 50 
-           nUniquePts <- ceiling((n+1)/2)
-           freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
-           
-           df <- data.frame(fre = freqArray, perX = Px, perY = Py, perZ = Pz)  
-           #View(df)
-           res <- c(getPeakRatioFeature(df$perX,df$fre, 0.005,1,FALSE),getPeakRatioFeature(df$perY,df$fre, 0.005,1,FALSE),getPeakRatioFeature(df$perZ,df$fre, 0.005,1,FALSE))
+           if(avg==TRUE){
+             Px = trans_to_frequency(window_data$avg - mean(window_data$avg))       
+             n = length(window_data$x)
+             sampling.rate = 50 
+             nUniquePts <- ceiling((n+1)/2)
+             freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
+             
+             df <- data.frame(fre = freqArray, perX = Px, perY = Py, perZ = Pz)  
+             
+             res <- c( getPeakRatioFeature(df$perX,df$fre, 0.005,1,FALSE) )
+           }else{
+             Px = trans_to_frequency(window_data$x - mean(window_data$x))
+             Py = trans_to_frequency(window_data$y - mean(window_data$y))
+             Pz = trans_to_frequency(window_data$z - mean(window_data$z))
+             
+             n = length(window_data$x)
+             sampling.rate = 50 
+             nUniquePts <- ceiling((n+1)/2)
+             freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
+             
+             df <- data.frame(fre = freqArray, perX = Px, perY = Py, perZ = Pz)  
+             #View(df)
+             res <- c(getPeakRatioFeature(df$perX,df$fre, 0.005,1,FALSE),getPeakRatioFeature(df$perY,df$fre, 0.005,1,FALSE),getPeakRatioFeature(df$perZ,df$fre, 0.005,1,FALSE))
+           }
          },
          autocorrelation={
            if(avg==TRUE){
-             window_data$avg <- (window_data$x + window_data$y + window_data$z)/3
              res <- c( getAutocorrelation(window_data$avg,opt_lag) )
            }else{
              res <- c(getAutocorrelation(window_data$x,opt_lag), getAutocorrelation(window_data$y,opt_lag), getAutocorrelation(window_data$z,opt_lag))             
@@ -183,94 +197,127 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
            res <- c(getAutocorrelationV2(window_data$x), getAutocorrelationV2(window_data$y), getAutocorrelationV2(window_data$z))
          },
          mean={
-           res <- c(mean(window_data$x),mean(window_data$y),mean(window_data$z))
-           #print(paste('mean',mean))
+           if(avg == TRUE){
+             res <- c(mean(window_data$avg))
+           }
+           else
+             res <- c(mean(window_data$x),mean(window_data$y),mean(window_data$z))
          },
          max={
-           res <- c(max(window_data$x),max(window_data$y),max(window_data$z))
-           #print(paste('max',max))
+           if(avg == TRUE){
+             res <- c(max(window_data$avg))
+           }else
+             res <- c(max(window_data$x),max(window_data$y),max(window_data$z))
          },
          min={
-           res <- c(min(window_data$x),min(window_data$y),min(window_data$z))
-           #print(paste('min',res))
+           if(avg == TRUE){
+             res <- c(min(window_data$avg))
+           }else
+             res <- c(min(window_data$x),min(window_data$y),min(window_data$z))
          },
          variance={
            if(avg == TRUE){
-             window_data$avg <- (window_data$x + window_data$y + window_data$z)/3
              res <- c( var(window_data$avg) )
            }else{
              res <- c(var(window_data$x),var(window_data$y),var(window_data$z))
            }
-           #print(paste('var',res))
          },
          correlation={
            res <- c(cor(window_data$x, window_data$y),cor(window_data$x, window_data$z),cor(window_data$y, window_data$z))
-           #print(paste('cov', res))
          },
          energy={
-           data<-window_data
-           ## TODO : mean acceleration 뺀다고??? 왜??
-           y <- data$x - mean(data$x)
-           y <- fft(y)
-           y <- Mod(y)^2
-           SOSM_x <- (sum(y))/(length(y))
-           
-           y <- data$y - mean(data$y)
-           y <- fft(y)
-           y <- Mod(y)^2
-           SOSM_y <- (sum(y))/(length(y))
-           
-           y <- data$z - mean(data$z)
-           y <- fft(y)
-           y <- Mod(y)^2
-           SOSM_z <- (sum(y))/(length(y))
-           
-           res <- c(SOSM_x, SOSM_y, SOSM_z)
+           if(avg == TRUE){
+             data<-window_data
+             ## TODO : mean acceleration 뺀다고??? 왜??
+             y <- data$avg - mean(data$avg)
+             y <- fft(y)
+             y <- Mod(y)^2
+             SOSM_avg <- (sum(y))/(length(y))
+             res <- c(SOSM_avg)
+           }
+           else{
+             data<-window_data
+             ## TODO : mean acceleration 뺀다고??? 왜??
+             y <- data$x - mean(data$x)
+             y <- fft(y)
+             y <- Mod(y)^2
+             SOSM_x <- (sum(y))/(length(y))
+             
+             y <- data$y - mean(data$y)
+             y <- fft(y)
+             y <- Mod(y)^2
+             SOSM_y <- (sum(y))/(length(y))
+             
+             y <- data$z - mean(data$z)
+             y <- fft(y)
+             y <- Mod(y)^2
+             SOSM_z <- (sum(y))/(length(y))
+             
+             res <- c(SOSM_x, SOSM_y, SOSM_z)
+           }
            #print(paste("energy",res))
          },
          entropy={
-           data<-window_data
-           y <- data$x - mean(data$x)
-           y <- fft(y)
-           y <- Mod(y)^2
-           energySum <- sum(y)
-           y <- y/energySum
-           e <- -1*y*log2(y+0.000001)         
-           entropy_x <- sum(e)
-           if(is.na(entropy_x)){
-             View(y)
-             View(e)
+           if(avg == TRUE)
+           {
+             data<-window_data
+             y <- data$avg - mean(data$avg)
+             y <- fft(y)
+             y <- Mod(y)^2
+             energySum <- sum(y)
+             y <- y/energySum
+             e <- -1*y*log2(y+0.000001)         
+             entropy_avg <- sum(e)
+             if(is.na(entropy_avg)){
+               View(y)
+               View(e)
+             }
+             
+             res <- c(entropy_avg)
+           }else{
+             data<-window_data
+             y <- data$x - mean(data$x)
+             y <- fft(y)
+             y <- Mod(y)^2
+             energySum <- sum(y)
+             y <- y/energySum
+             e <- -1*y*log2(y+0.000001)         
+             entropy_x <- sum(e)
+             if(is.na(entropy_x)){
+               View(y)
+               View(e)
+             }
+             
+             y <- data$y - mean(data$y)
+             y <- fft(y)
+             y <- Mod(y)^2
+             energySum <- sum(y)
+             y <- y/energySum
+             e <- -1*y*log2(y+0.000001)         
+             entropy_y <- sum(e)
+             if(is.na(entropy_y)){
+               View(y)
+               View(e)
+             }
+             
+             y <- data$z - mean(data$z)
+             y <- fft(y)
+             y <- Mod(y)^2
+             energySum <- sum(y)
+             y <- y/energySum
+             e <- -1*y*log2(y+0.000001)         
+             entropy_z <- sum(e)
+             if(is.na(entropy_z)){
+               View(y)
+               View(e)
+             }
+             
+             res <- c(entropy_x, entropy_y, entropy_z)
            }
-           
-           y <- data$y - mean(data$y)
-           y <- fft(y)
-           y <- Mod(y)^2
-           energySum <- sum(y)
-           y <- y/energySum
-           e <- -1*y*log2(y+0.000001)         
-           entropy_y <- sum(e)
-           if(is.na(entropy_y)){
-             View(y)
-             View(e)
-           }
-           
-           y <- data$z - mean(data$z)
-           y <- fft(y)
-           y <- Mod(y)^2
-           energySum <- sum(y)
-           y <- y/energySum
-           e <- -1*y*log2(y+0.000001)         
-           entropy_z <- sum(e)
-           if(is.na(entropy_z)){
-             View(y)
-             View(e)
-           }
-           
-           res <- c(entropy_x, entropy_y, entropy_z)
-           
-           #print(res)
          }
   )
+  
+  #print(paste("feature Type ", feature_type, " opt_lag = ", opt_lag, ", res ", res))
   return (res)
 }
 

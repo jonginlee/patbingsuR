@@ -40,7 +40,7 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
     geom_line(aes(y=x, colour="X")) +
     geom_line(aes(y=y, colour="Y")) +
     geom_line(aes(y=z, colour="Z")) +
-    #geom_line(aes(y=mag, colour="_Magnitude")) + 
+    geom_line(aes(y=mag, colour="_Magnitude")) + 
     ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
     scale_color_manual(values=c("red","blue","black","violet")) +
     xlab(xlablename) +
