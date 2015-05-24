@@ -10,7 +10,6 @@ detectScratchMovs <- function(data, idx, graph_title,  window_size, window_step,
     data.sub <- subset(data.sub, subset=(data.sub$time < end_milli ))  
   }
   
-  
   data.sub <- subset(data.sub, subset=(data.sub$time > 1000*3 ))
   e_idx <- nrow(data.sub)
   e_time <- data.sub$time[e_idx]

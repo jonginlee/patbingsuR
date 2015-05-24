@@ -54,7 +54,6 @@ for(i in 1: length(filelist))
   name <- filelist[i]
   data <- read.table(paste("./data_raw/", name ,".txt",sep=""),sep=",",header=TRUE)
   detectScratchMovs(data , 8, name, window_size, window_step, smodel3)
-  
 }
 
 
@@ -89,46 +88,9 @@ View(sum_data)
 
 write.csv(sum_data, file=paste("./data_raw/testsetForWeka.txt",sep=""), row.names=FALSE)
 
-tt<- getDataset2(c(
-  "data_watch20150412_scratching_x"
-), c(
-  "data_watch20150412_normal"
-),8, window_size, window_stp, FALSE)
+================================================================================================================
 
-
-
-tt<- getDataset2(c(
-  "data_watch20150412_scratching_x",
-  "data_watch20150412_scratching_y",
-  "data_watch20150412_scratching_z",
-  "data_watch20150413_eunji_scratch",
-  "data_watch20150413_eunji_scratch_2",
-  "data_watch20150413_seungho",
-  "data_watch20150413_seungho_3"
-), c(
-  "data_watch20150412_normal",
-  "data_watch20150412_normal_2",
-  "data_watch20150413_normal4",
-  "data_watch20150413_normal3"
-),8, window_size, window_stp, FALSE)
-
-tt2<- getDataset2(c(
-  "data_watch20150412_scratching_x",
-  "data_watch20150412_scratching_y",
-  "data_watch20150412_scratching_z",
-  "data_watch20150413_eunji_scratch",
-  "data_watch20150413_eunji_scratch_2",
-  "data_watch20150413_seungho",
-  "data_watch20150413_seungho_3"
-), c(
-  "data_watch20150412_normal",
-  "data_watch20150412_normal_2",
-  "data_watch20150413_normal4",
-  "data_watch20150413_normal3"
-),2, window_size, window_stp, FALSE)
-
-
-for(i in c(1,2,3,8))
+for(i in c(1,3,8))
 {
   tt<- getDataset2(c(
     "data_watch20150412_scratching_x",
@@ -143,7 +105,12 @@ for(i in c(1,2,3,8))
     "data_watch20150412_normal_2",
     "data_watch20150413_normal4",
     "data_watch20150413_normal3"
-  ),i, window_size, window_stp, FALSE)
+  ),i, window_size, window_stp, FALSE, c(
+    "data_watch20150412_scratching_no_wrist",
+    "data_watch20150412_scratching_no_wrist_2",
+    "data_watch20150416_scratching_no_wrist_3",
+    "data_watch20150416_scratching_no_wrist_4"
+  ))
   
   if(i=='1'){
     sum_data <- tt[,5:length(tt)]
@@ -153,11 +120,12 @@ for(i in c(1,2,3,8))
 
   print(paste("index : ",i, "len : ",nrow(tt) ))
 }
-write.csv(sum_data, file=paste("./data_raw/testsetForWeka3.arff",sep=""), row.names=FALSE)
 
+write.csv(sum_data, file=paste("./data_raw/testsetForWeka4.arff",sep=""), row.names=FALSE)
 
+================================================================================================================
 
-t<-doSimulationAllFeatures(data_watch20150412_scratching_x , TRUE, 8, window_size, window_stp, "labelname", FALSE,delay=1)
+t<-doSimulationAllFeatures(data_watch20150412_scratching_x , TRUE, 2, window_size, window_stp, "labelname", FALSE,delay=1)
 
 sum_data <- tt[,5:length(tt)]
 
@@ -166,58 +134,229 @@ View(sum_data)
 write.csv(sum_data, file=paste("./data_raw/testsetForWeka3.arff",sep=""), row.names=FALSE)
 ====================================
   
-  @RELATION data_watch20150412
+@RELATION data_watch20150523
 
-
-@ATTRIBUTE label {non, scratch}
-@ATTRIBUTE mean_x NUMERIC
-@ATTRIBUTE mean_y NUMERIC
-@ATTRIBUTE mean_z NUMERIC
-@ATTRIBUTE max_x NUMERIC
-@ATTRIBUTE max_y NUMERIC
-@ATTRIBUTE max_z NUMERIC
-@ATTRIBUTE min_x NUMERIC
-@ATTRIBUTE min_y NUMERIC
-@ATTRIBUTE min_z NUMERIC
-@ATTRIBUTE entropy_x NUMERIC
-@ATTRIBUTE entropy_y NUMERIC
-@ATTRIBUTE entropy_z NUMERIC
-@ATTRIBUTE energy_x NUMERIC
-@ATTRIBUTE energy_y NUMERIC
-@ATTRIBUTE energy_z NUMERIC
-@ATTRIBUTE cor_x NUMERIC
-@ATTRIBUTE cor_y NUMERIC
-@ATTRIBUTE cor_z NUMERIC
-@ATTRIBUTE autocor1_x NUMERIC
-@ATTRIBUTE autocor1_y NUMERIC
-@ATTRIBUTE autocor1_z NUMERIC
-@ATTRIBUTE th_x NUMERIC
-@ATTRIBUTE th_y NUMERIC
-@ATTRIBUTE th_z NUMERIC
-@ATTRIBUTE autocor2_x NUMERIC
-@ATTRIBUTE autocor2_y NUMERIC
-@ATTRIBUTE autocor2_z NUMERIC
-@ATTRIBUTE var_x NUMERIC
-@ATTRIBUTE var_y NUMERIC
-@ATTRIBUTE var_z NUMERIC
-@ATTRIBUTE preakfreq_x NUMERIC
-@ATTRIBUTE preakfreq_y NUMERIC
-@ATTRIBUTE preakfreq_z NUMERIC
-@ATTRIBUTE mean_mag NUMERIC
-@ATTRIBUTE max_mag NUMERIC
-@ATTRIBUTE min_mag NUMERIC
-@ATTRIBUTE entropy_mag NUMERIC
-@ATTRIBUTE energy_mag NUMERIC
-@ATTRIBUTE autocor1_mag NUMERIC
-@ATTRIBUTE th_mag NUMERIC
-@ATTRIBUTE autocor2_mag NUMERIC
-@ATTRIBUTE var_mag NUMERIC
-@ATTRIBUTE preakfreq_mag NUMERIC
+@ATTRIBUTE label {non, scratch, scratch_finger}
+@ATTRIBUTE accel_mean_x NUMERIC
+@ATTRIBUTE accel_mean_y NUMERIC
+@ATTRIBUTE accel_mean_z NUMERIC
+@ATTRIBUTE accel_max_x NUMERIC
+@ATTRIBUTE accel_max_y NUMERIC
+@ATTRIBUTE accel_max_z NUMERIC
+@ATTRIBUTE accel_min_x NUMERIC
+@ATTRIBUTE accel_min_y NUMERIC
+@ATTRIBUTE accel_min_z NUMERIC
+@ATTRIBUTE accel_entropy_x NUMERIC
+@ATTRIBUTE accel_entropy_y NUMERIC
+@ATTRIBUTE accel_entropy_z NUMERIC
+@ATTRIBUTE accel_energy_x NUMERIC
+@ATTRIBUTE accel_energy_y NUMERIC
+@ATTRIBUTE accel_energy_z NUMERIC
+@ATTRIBUTE accel_cor_x NUMERIC
+@ATTRIBUTE accel_cor_y NUMERIC
+@ATTRIBUTE accel_cor_z NUMERIC
+@ATTRIBUTE accel_autocor1_x NUMERIC
+@ATTRIBUTE accel_autocor1_y NUMERIC
+@ATTRIBUTE accel_autocor1_z NUMERIC
+@ATTRIBUTE accel_th_x NUMERIC
+@ATTRIBUTE accel_th_y NUMERIC
+@ATTRIBUTE accel_th_z NUMERIC
+@ATTRIBUTE accel_autocor2_x NUMERIC
+@ATTRIBUTE accel_autocor2_y NUMERIC
+@ATTRIBUTE accel_autocor2_z NUMERIC
+@ATTRIBUTE accel_var_x NUMERIC
+@ATTRIBUTE accel_var_y NUMERIC
+@ATTRIBUTE accel_var_z NUMERIC
+@ATTRIBUTE accel_preakfreq_x NUMERIC
+@ATTRIBUTE accel_preakfreq_y NUMERIC
+@ATTRIBUTE accel_preakfreq_z NUMERIC
+@ATTRIBUTE accel_mean_mag NUMERIC
+@ATTRIBUTE accel_max_mag NUMERIC
+@ATTRIBUTE accel_min_mag NUMERIC
+@ATTRIBUTE accel_entropy_mag NUMERIC
+@ATTRIBUTE accel_energy_mag NUMERIC
+@ATTRIBUTE accel_autocor1_mag NUMERIC
+@ATTRIBUTE accel_th_mag NUMERIC
+@ATTRIBUTE accel_autocor2_mag NUMERIC
+@ATTRIBUTE accel_var_mag NUMERIC
+@ATTRIBUTE accel_preakfreq_mag NUMERIC
+@ATTRIBUTE magnet_mean_x NUMERIC
+@ATTRIBUTE magnet_mean_y NUMERIC
+@ATTRIBUTE magnet_mean_z NUMERIC
+@ATTRIBUTE magnet_max_x NUMERIC
+@ATTRIBUTE magnet_max_y NUMERIC
+@ATTRIBUTE magnet_max_z NUMERIC
+@ATTRIBUTE magnet_min_x NUMERIC
+@ATTRIBUTE magnet_min_y NUMERIC
+@ATTRIBUTE magnet_min_z NUMERIC
+@ATTRIBUTE magnet_entropy_x NUMERIC
+@ATTRIBUTE magnet_entropy_y NUMERIC
+@ATTRIBUTE magnet_entropy_z NUMERIC
+@ATTRIBUTE magnet_energy_x NUMERIC
+@ATTRIBUTE magnet_energy_y NUMERIC
+@ATTRIBUTE magnet_energy_z NUMERIC
+@ATTRIBUTE magnet_cor_x NUMERIC
+@ATTRIBUTE magnet_cor_y NUMERIC
+@ATTRIBUTE magnet_cor_z NUMERIC
+@ATTRIBUTE magnet_autocor1_x NUMERIC
+@ATTRIBUTE magnet_autocor1_y NUMERIC
+@ATTRIBUTE magnet_autocor1_z NUMERIC
+@ATTRIBUTE magnet_th_x NUMERIC
+@ATTRIBUTE magnet_th_y NUMERIC
+@ATTRIBUTE magnet_th_z NUMERIC
+@ATTRIBUTE magnet_autocor2_x NUMERIC
+@ATTRIBUTE magnet_autocor2_y NUMERIC
+@ATTRIBUTE magnet_autocor2_z NUMERIC
+@ATTRIBUTE magnet_var_x NUMERIC
+@ATTRIBUTE magnet_var_y NUMERIC
+@ATTRIBUTE magnet_var_z NUMERIC
+@ATTRIBUTE magnet_preakfreq_x NUMERIC
+@ATTRIBUTE magnet_preakfreq_y NUMERIC
+@ATTRIBUTE magnet_preakfreq_z NUMERIC
+@ATTRIBUTE magnet_mean_mag NUMERIC
+@ATTRIBUTE magnet_max_mag NUMERIC
+@ATTRIBUTE magnet_min_mag NUMERIC
+@ATTRIBUTE magnet_entropy_mag NUMERIC
+@ATTRIBUTE magnet_energy_mag NUMERIC
+@ATTRIBUTE magnet_autocor1_mag NUMERIC
+@ATTRIBUTE magnet_th_mag NUMERIC
+@ATTRIBUTE magnet_autocor2_mag NUMERIC
+@ATTRIBUTE magnet_var_mag NUMERIC
+@ATTRIBUTE magnet_preakfreq_mag NUMERIC
+@ATTRIBUTE gyro_mean_x NUMERIC
+@ATTRIBUTE gyro_mean_y NUMERIC
+@ATTRIBUTE gyro_mean_z NUMERIC
+@ATTRIBUTE gyro_max_x NUMERIC
+@ATTRIBUTE gyro_max_y NUMERIC
+@ATTRIBUTE gyro_max_z NUMERIC
+@ATTRIBUTE gyro_min_x NUMERIC
+@ATTRIBUTE gyro_min_y NUMERIC
+@ATTRIBUTE gyro_min_z NUMERIC
+@ATTRIBUTE gyro_entropy_x NUMERIC
+@ATTRIBUTE gyro_entropy_y NUMERIC
+@ATTRIBUTE gyro_entropy_z NUMERIC
+@ATTRIBUTE gyro_energy_x NUMERIC
+@ATTRIBUTE gyro_energy_y NUMERIC
+@ATTRIBUTE gyro_energy_z NUMERIC
+@ATTRIBUTE gyro_cor_x NUMERIC
+@ATTRIBUTE gyro_cor_y NUMERIC
+@ATTRIBUTE gyro_cor_z NUMERIC
+@ATTRIBUTE gyro_autocor1_x NUMERIC
+@ATTRIBUTE gyro_autocor1_y NUMERIC
+@ATTRIBUTE gyro_autocor1_z NUMERIC
+@ATTRIBUTE gyro_th_x NUMERIC
+@ATTRIBUTE gyro_th_y NUMERIC
+@ATTRIBUTE gyro_th_z NUMERIC
+@ATTRIBUTE gyro_autocor2_x NUMERIC
+@ATTRIBUTE gyro_autocor2_y NUMERIC
+@ATTRIBUTE gyro_autocor2_z NUMERIC
+@ATTRIBUTE gyro_var_x NUMERIC
+@ATTRIBUTE gyro_var_y NUMERIC
+@ATTRIBUTE gyro_var_z NUMERIC
+@ATTRIBUTE gyro_preakfreq_x NUMERIC
+@ATTRIBUTE gyro_preakfreq_y NUMERIC
+@ATTRIBUTE gyro_preakfreq_z NUMERIC
+@ATTRIBUTE gyro_mean_mag NUMERIC
+@ATTRIBUTE gyro_max_mag NUMERIC
+@ATTRIBUTE gyro_min_mag NUMERIC
+@ATTRIBUTE gyro_entropy_mag NUMERIC
+@ATTRIBUTE gyro_energy_mag NUMERIC
+@ATTRIBUTE gyro_autocor1_mag NUMERIC
+@ATTRIBUTE gyro_th_mag NUMERIC
+@ATTRIBUTE gyro_autocor2_mag NUMERIC
+@ATTRIBUTE gyro_var_mag NUMERIC
+@ATTRIBUTE gyro_preakfreq_mag NUMERIC
+@ATTRIBUTE orientation_mean_x NUMERIC
+@ATTRIBUTE orientation_mean_y NUMERIC
+@ATTRIBUTE orientation_mean_z NUMERIC
+@ATTRIBUTE orientation_max_x NUMERIC
+@ATTRIBUTE orientation_max_y NUMERIC
+@ATTRIBUTE orientation_max_z NUMERIC
+@ATTRIBUTE orientation_min_x NUMERIC
+@ATTRIBUTE orientation_min_y NUMERIC
+@ATTRIBUTE orientation_min_z NUMERIC
+@ATTRIBUTE orientation_entropy_x NUMERIC
+@ATTRIBUTE orientation_entropy_y NUMERIC
+@ATTRIBUTE orientation_entropy_z NUMERIC
+@ATTRIBUTE orientation_energy_x NUMERIC
+@ATTRIBUTE orientation_energy_y NUMERIC
+@ATTRIBUTE orientation_energy_z NUMERIC
+@ATTRIBUTE orientation_cor_x NUMERIC
+@ATTRIBUTE orientation_cor_y NUMERIC
+@ATTRIBUTE orientation_cor_z NUMERIC
+@ATTRIBUTE orientation_autocor1_x NUMERIC
+@ATTRIBUTE orientation_autocor1_y NUMERIC
+@ATTRIBUTE orientation_autocor1_z NUMERIC
+@ATTRIBUTE orientation_th_x NUMERIC
+@ATTRIBUTE orientation_th_y NUMERIC
+@ATTRIBUTE orientation_th_z NUMERIC
+@ATTRIBUTE orientation_autocor2_x NUMERIC
+@ATTRIBUTE orientation_autocor2_y NUMERIC
+@ATTRIBUTE orientation_autocor2_z NUMERIC
+@ATTRIBUTE orientation_var_x NUMERIC
+@ATTRIBUTE orientation_var_y NUMERIC
+@ATTRIBUTE orientation_var_z NUMERIC
+@ATTRIBUTE orientation_preakfreq_x NUMERIC
+@ATTRIBUTE orientation_preakfreq_y NUMERIC
+@ATTRIBUTE orientation_preakfreq_z NUMERIC
+@ATTRIBUTE orientation_mean_mag NUMERIC
+@ATTRIBUTE orientation_max_mag NUMERIC
+@ATTRIBUTE orientation_min_mag NUMERIC
+@ATTRIBUTE orientation_entropy_mag NUMERIC
+@ATTRIBUTE orientation_energy_mag NUMERIC
+@ATTRIBUTE orientation_autocor1_mag NUMERIC
+@ATTRIBUTE orientation_th_mag NUMERIC
+@ATTRIBUTE orientation_autocor2_mag NUMERIC
+@ATTRIBUTE orientation_var_mag NUMERIC
+@ATTRIBUTE orientation_preakfreq_mag NUMERIC
+@ATTRIBUTE linearaccel_mean_x NUMERIC
+@ATTRIBUTE linearaccel_mean_y NUMERIC
+@ATTRIBUTE linearaccel_mean_z NUMERIC
+@ATTRIBUTE linearaccel_max_x NUMERIC
+@ATTRIBUTE linearaccel_max_y NUMERIC
+@ATTRIBUTE linearaccel_max_z NUMERIC
+@ATTRIBUTE linearaccel_min_x NUMERIC
+@ATTRIBUTE linearaccel_min_y NUMERIC
+@ATTRIBUTE linearaccel_min_z NUMERIC
+@ATTRIBUTE linearaccel_entropy_x NUMERIC
+@ATTRIBUTE linearaccel_entropy_y NUMERIC
+@ATTRIBUTE linearaccel_entropy_z NUMERIC
+@ATTRIBUTE linearaccel_energy_x NUMERIC
+@ATTRIBUTE linearaccel_energy_y NUMERIC
+@ATTRIBUTE linearaccel_energy_z NUMERIC
+@ATTRIBUTE linearaccel_cor_x NUMERIC
+@ATTRIBUTE linearaccel_cor_y NUMERIC
+@ATTRIBUTE linearaccel_cor_z NUMERIC
+@ATTRIBUTE linearaccel_autocor1_x NUMERIC
+@ATTRIBUTE linearaccel_autocor1_y NUMERIC
+@ATTRIBUTE linearaccel_autocor1_z NUMERIC
+@ATTRIBUTE linearaccel_th_x NUMERIC
+@ATTRIBUTE linearaccel_th_y NUMERIC
+@ATTRIBUTE linearaccel_th_z NUMERIC
+@ATTRIBUTE linearaccel_autocor2_x NUMERIC
+@ATTRIBUTE linearaccel_autocor2_y NUMERIC
+@ATTRIBUTE linearaccel_autocor2_z NUMERIC
+@ATTRIBUTE linearaccel_var_x NUMERIC
+@ATTRIBUTE linearaccel_var_y NUMERIC
+@ATTRIBUTE linearaccel_var_z NUMERIC
+@ATTRIBUTE linearaccel_preakfreq_x NUMERIC
+@ATTRIBUTE linearaccel_preakfreq_y NUMERIC
+@ATTRIBUTE linearaccel_preakfreq_z NUMERIC
+@ATTRIBUTE linearaccel_mean_mag NUMERIC
+@ATTRIBUTE linearaccel_max_mag NUMERIC
+@ATTRIBUTE linearaccel_min_mag NUMERIC
+@ATTRIBUTE linearaccel_entropy_mag NUMERIC
+@ATTRIBUTE linearaccel_energy_mag NUMERIC
+@ATTRIBUTE linearaccel_autocor1_mag NUMERIC
+@ATTRIBUTE linearaccel_th_mag NUMERIC
+@ATTRIBUTE linearaccel_autocor2_mag NUMERIC
+@ATTRIBUTE linearaccel_var_mag NUMERIC
+@ATTRIBUTE linearaccel_preakfreq_mag NUMERIC
 
 @DATA
 
 
-================================
+=========
   
 
 @RELATION data_watch20150412

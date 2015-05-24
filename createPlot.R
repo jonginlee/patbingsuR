@@ -166,18 +166,16 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
   
 
   
-#  max_value <- (max(data.sub$time))
-#  min_value <- (min(data.sub$time))
-#  range <- max_value - min_value
-#  tindex<-1
-#  for(i in 0:((range/1000)-1) )
-#  {
-#    time_i <- min_value + i*1000
-#    returnValue <- returnValue + geom_vline(xintercept = time_i, colour="black", alpha=0.8)
-#   }
+  max_value <- (max(data.sub$time))
+  min_value <- (min(data.sub$time))
+  range <- max_value - min_value
+  tindex<-1
+  for(i in 0:((range/1000)-1) )
+  {
+    time_i <- min_value + i*1000
+    returnValue <- returnValue + geom_vline(xintercept = time_i, colour="black", alpha=0.8)
+   }
   
-  #print(returnValue)
-  
-  
+  print(returnValue)
   
 }

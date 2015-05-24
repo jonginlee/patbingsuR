@@ -138,8 +138,8 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
   for(i in 1:window_num)
   {
     window_data_for_mag <- getWindow(data.mag, window_idx, window_size)
-    magnitude=sqrt(window_data_for_mag$x^2+window_data_for_mag$y^2+window_data_for_mag$z^2)
-    
+    magnitude <- sqrt( (window_data_for_mag$x+50)^2+(window_data_for_mag$y+50)^2+(window_data_for_mag$z+50)^2)
+    magnitude <- magnitude - mean(magnitude)
     window_data <- getWindow(data.sub,window_idx,window_size)
     window_df <- data.frame(time_hour=window_data$hour, time_milli =window_data$time, x=window_data$x, y=window_data$y, 
                             z=window_data$z, saxis=(window_data$x+window_data$y+window_data$z))
