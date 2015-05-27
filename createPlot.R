@@ -1,11 +1,11 @@
 
-list = c("Accel","Magnet","Gyro","Hum","Temp","Press","orientation","Linearaccel")
-sensor_name_list = c("Accelerometer","Magnetometer", "Gyroscope", "Humidity", "Temperature", "Pressure","Orientation(x-azimuth,y-pitch,z-roll)","Linear Accelerometer")
-y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity (rad/s)", "relative humidity (RH)","celsius degrees (°C)"," hectopascal (hPa)","rotation round", "acceleration (m/s^2)")
+list = c("Accel","Magnet","Gyro","Hum","Temp","Press","orientation","Linearaccel","HeartRate")
+sensor_name_list = c("Accelerometer","Magnetometer", "Gyroscope", "Humidity", "Temperature", "Pressure","Orientation(x-azimuth,y-pitch,z-roll)","Linear Accelerometer" ,"Heart Rate")
+y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity (rad/s)", "relative humidity (RH)","celsius degrees (°C)", "hectopascal (hPa)", "rotation round", "acceleration (m/s^2)", "beats per minute (bpm)")
 
 
 createPlot <- function(data, idx, graph_title, saveFile, source_date, 
-                         set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ) {
+                         set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ,windowing=FALSE) {
   data.sub <- data
   if(set_btw){
     data.sub <- subset(data.sub, subset=(data.sub$time > start_hour ))
@@ -36,20 +36,36 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
   df$mag <- sqrt((data.sub$x+50)^2 + (data.sub$y+50)^2 + (data.sub$z+50)^2)
   df$mag <- df$mag - mean(df$mag)
   
-  returnValue <- ggplot(df, aes(x=time,colour="axis")) +
-    geom_line(aes(y=x, colour="X")) +
-    geom_line(aes(y=y, colour="Y")) +
-    geom_line(aes(y=z, colour="Z")) +
-    geom_line(aes(y=mag, colour="_Magnitude")) + 
-    ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
-    scale_color_manual(values=c("red","blue","black","violet")) +
-    xlab(xlablename) +
-    ylab(y_label_list[idx]) +
-    scale_x_continuous(breaks = spliting) +
-    theme_bw() +
-    theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
-          axis.text.x = element_text(angle=40,hjust=1,vjust=1))
-  
+  if(idx==9)
+  {
+    returnValue <- ggplot(df, aes(x=time,colour="axis")) +
+      geom_line(aes(y=x, colour="X")) +
+      ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
+      scale_color_manual(values=c("red")) +
+      xlab(xlablename) +
+      ylab(y_label_list[idx]) +
+      scale_x_continuous(breaks = spliting) +
+      theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+    
+  }
+  else{
+    returnValue <- ggplot(df, aes(x=time,colour="axis")) +
+      geom_line(aes(y=x, colour="X")) +
+      geom_line(aes(y=y, colour="Y")) +
+      geom_line(aes(y=z, colour="Z")) +
+      geom_line(aes(y=mag, colour="_Magnitude")) + 
+      ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
+      scale_color_manual(values=c("red","blue","black","violet")) +
+      xlab(xlablename) +
+      ylab(y_label_list[idx]) +
+      scale_x_continuous(breaks = spliting) +
+      theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+  }
+
   returnValue <- returnValue + geom_hline(aes(yintercept=threshold), colour="yellow")
   
   print(returnValue)
@@ -165,17 +181,19 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
   }
   
 
-  
-  max_value <- (max(data.sub$time))
-  min_value <- (min(data.sub$time))
-  range <- max_value - min_value
-  tindex<-1
-  for(i in 0:((range/1000)-1) )
-  {
-    time_i <- min_value + i*1000
-    returnValue <- returnValue + geom_vline(xintercept = time_i, colour="black", alpha=0.8)
-   }
-  
-  print(returnValue)
+  if(windowing){
+    max_value <- (max(data.sub$time))
+    min_value <- (min(data.sub$time))
+    range <- max_value - min_value
+    tindex<-1
+    for(i in 0:((range/1000)-1) )
+    {
+      time_i <- min_value + i*1000
+      returnValue <- returnValue + geom_vline(xintercept = time_i, colour="black", alpha=0.8)
+    }
+    
+    print(returnValue)
+  }
+
   
 }

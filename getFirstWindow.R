@@ -13,6 +13,12 @@ filelist <- c(
   "data_watch_jongin0524DATASET4_2"
 )
 
+
+filelist <- c(
+  "data_watch_0527_testset"
+)
+
+
 for(idx in c(1,2,3,7,8))
 {
 
@@ -20,7 +26,7 @@ for(idx in c(1,2,3,7,8))
   {
     name <- filelist[i]
     data <- read.table(paste("./data_raw/", name ,".txt",sep=""),sep=",",header=TRUE)
-    t3 <- getFirstWindow(data, idx, 25, 50, FALSE, "test", 0.04, FALSE)
+    t3 <- getFirstWindow(data, idx, 25, 100, TRUE, "test", 0.05, FALSE)
     
     if(i==1)
     {
@@ -38,7 +44,8 @@ for(idx in c(1,2,3,7,8))
   print(paste("index : ",idx, "len : ",nrow(t) ))
 }
 
-write.csv(sum_data, file=paste("./data_raw/location_test.arff",sep=""), row.names=FALSE)
+
+write.csv(sum_data, file=paste("./data_raw/location_test2.arff",sep=""), row.names=FALSE)
 
 
 
@@ -177,7 +184,7 @@ getFirstWindow <- function(data, idx, window_size, period, ploting=FALSE, graph_
       bWin <- TRUE
       
     }else{
-      if(delayNum!=1 & (i-delayNum > 20))
+      if(delayNum!=1 & (i-delayNum > 5))
         bWin <- FALSE
     }
     

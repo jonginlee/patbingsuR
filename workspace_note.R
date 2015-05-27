@@ -16,6 +16,20 @@ createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_42_
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_55_20)", TRUE, "0521",TRUE, getMilliFromHMS(3,55,15,TRUE,1,41,51), getMilliFromHMS(3,55,30,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(4_21_17)", TRUE, "0521",TRUE, getMilliFromHMS(4,21,10,TRUE,1,41,51), getMilliFromHMS(4,21,35,TRUE,1,41,51))
 
+data_watch_0521_walking_1_57_38 <- read.table("./data_raw/scratching_data0521(1_57_38).txt",sep=",",header=TRUE)
+data_watch_0521_walking_3_14_16 <- read.table("./data_raw/scratching_data0521(3_14_16).txt",sep=",",header=TRUE)
+data_watch_0521_walking_3_15_58 <- read.table("./data_raw/scratching_data0521(3_15_58).txt",sep=",",header=TRUE)
+data_watch_0521_walking_3_42_22 <- read.table("./data_raw/scratching_data0521(3_42_22).txt",sep=",",header=TRUE)
+data_watch_0521_walking_3_55_20 <- read.table("./data_raw/scratching_data0521(3_55_20).txt",sep=",",header=TRUE)
+data_watch_0521_walking_4_21_17 <- read.table("./data_raw/scratching_data0521(4_21_17).txt",sep=",",header=TRUE)
+
+detectScratchMovs(data_watch_0521_walking_1_57_38 , 8, "scratching_data0521(1_57_38)", 50, 25, smodel3)
+detectScratchMovs(data_watch_0521_walking_3_14_16 , 8, "scratching_data0521(3_14_16)", 50, 25, smodel3)
+detectScratchMovs(data_watch_0521_walking_3_15_58 , 8, "scratching_data0521(3_15_58)", 50, 25, smodel3)
+detectScratchMovs(data_watch_0521_walking_3_42_22 , 8, "scratching_data0521(3_42_22)", 50, 25, smodel3)
+detectScratchMovs(data_watch_0521_walking_3_55_20 , 8, "scratching_data0521(3_55_20)", 50, 25, smodel3)
+detectScratchMovs(data_watch_0521_walking_4_21_17 , 8, "scratching_data0521(4_21_17)", 50, 25, smodel3)
+
 
 # 0520 scratch file creating!!
 

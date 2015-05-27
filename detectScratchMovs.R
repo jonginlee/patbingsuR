@@ -327,8 +327,8 @@ detectScratchMovs <- function(data, idx, graph_title,  window_size, window_step,
         else
           defined_color <- "red"
         
-        if(t$label[pre_idx]!="scratch")
-          defined_color <- "black"
+#        if(t$label[pre_idx]!="scratch")
+#          defined_color <- "black"
         
         if( (predictions[pre_idx]=="scratch") | predictions[pre_idx]=="scratch_finger" ){    
           rect <- data.frame(xmin=data.sub$time[window_idx], xmax=data.sub$time[window_idx+nrow(window_data)-2], ymin=-Inf, ymax=Inf)

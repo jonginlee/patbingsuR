@@ -1,7 +1,31 @@
 # utility
+data <- data_watch_0521_walking_4_21_17
 
+data <- subset(data, subset=(data$time > 1*1000 ))
+data <- subset(data, subset=(data$time < 29*1000 ))
 
+data1 <- subset(data,grepl(list[8], data$type))
+data2 <- subset(data,grepl(list[2], data$type))
+data3 <- subset(data,grepl(list[3], data$type))
+data1<- data1[1:1595,]
+data2 <- data2[1:1595,]
+data3 <- data3[1:1595,]
 
+nrow(data1)
+nrow(data2)
+nrow(data3)
+
+df <- data.frame(p = data1$time, 
+                 gyroX = data3$x, gyroY = data3$y, gyroZ = data3$z,
+                 accelX = data1$x, accelY = data1$y, accelZ = data1$z,  
+                 magnetX = data2$x, magnetY = data2$y, magnetZ = data2$z
+                 )
+
+colnames(df) <- c("Packet number",    "Gyroscope X (deg/s)",  "Gyroscope Y (deg/s)",	"Gyroscope Z (deg/s)",	"Accelerometer X (g)",	"Accelerometer Y (g)",	"Accelerometer Z (g)",	"Magnetometer X (G)",	"Magnetometer Y (G)",	"Magnetometer Z (G)")
+
+View(df)
+
+write.csv(df, file=paste("./data_raw/testWalkingforMATLAB7.txt",sep=""), row.names=FALSE)
 
 
 getMilliFromHMS <- function(hour, minute, second, setStartT=FALSE, hour2=0, minute2=0, second2=0)

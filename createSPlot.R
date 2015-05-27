@@ -17,6 +17,47 @@ S[S > 10^(-3/10)] <- 10^(-3/10)      # clip above -3 dB.
 image(t(20*log10(S)), axes = FALSE)  #, col = gray(0:255 / 255))
 
 
+
+getMFCCfeatureBy <- function(addr, title, startS, endS, plotting=FALSE)
+{
+  sndObj2 <- readWave(addr, from=startS, to=endS, units= "seconds")
+  
+  if(plotting)
+  {
+    sndObj <- readWave(addr)
+    str(sndObj)
+    s1 <- sndObj@left
+    s1 <- s1 / 2^(sndObj@bit -1)
+    timeArray <- (0:( length(sndObj@left)-1)) / sndObj@samp.rate
+    #View(timeArray)
+    df <- data.frame(time_milli = timeArray, amplitude = s1)  
+    
+    max_value <- (as.integer(max(df$time)))
+    spliting <- seq(0,max_value,max_value/10)
+    
+    returnValue <- ggplot(df, aes(x=time_milli, y=amplitude))  +
+      geom_line() +
+      ggtitle(paste("Sound signal", title)) + 
+      #  coord_fixed(ratio=1/4) +
+      xlab("Time (second)") +
+      ylab("Amplitude")+
+      scale_x_continuous(breaks = spliting) +
+      #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
+      #scale_x_continuous(breaks = seq(start_time,end_time,(as.integer((end_time-start_time)/10)) )) +
+      #scale_x_continuous(breaks = 10) +
+      theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+    
+    rect <- data.frame(xmin=startS, xmax=endS, ymin=-Inf, ymax=Inf)
+    returnValue <- returnValue + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill="blue", inherit.aes = FALSE)
+    print(returnValue)
+  }
+
+  m1 <- melfcc(sndObj2, wintime = 0.5,hoptime = 0.25)
+  return(m1)
+}
+
 createSPlot<-function(addr, title, set_btw=FALSE, start_milli=0, end_milli=0 ,freqprint=FALSE )
 {
   

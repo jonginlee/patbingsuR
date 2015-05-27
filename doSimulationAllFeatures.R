@@ -122,8 +122,7 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
                          paste(sname,"_th_avg",sep=""),
                          paste(sname,"_autocor2_avg",sep=""),
                          paste(sname,"_var_avg",sep=""),
-                         paste(sname,"_peakfreq_avg",sep="")
-                         
+                         paste(sname,"_peakfreq_avg",sep="") 
                          )
   
   
