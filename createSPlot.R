@@ -18,9 +18,12 @@ image(t(20*log10(S)), axes = FALSE)  #, col = gray(0:255 / 255))
 
 
 
-getMFCCfeatureBy <- function(addr, title, startS, endS, plotting=FALSE)
+getMFCCfeatureBy <- function(addr, title, setbtw = FALSE, startS = 1, endS=2, plotting=FALSE)
 {
-  sndObj2 <- readWave(addr, from=startS, to=endS, units= "seconds")
+  if(setbtw)
+    sndObj2 <- readWave(addr, from=startS, to=endS, units= "seconds")
+  else
+    sndObj2 <- readWave(addr)
   
   if(plotting)
   {
@@ -32,8 +35,8 @@ getMFCCfeatureBy <- function(addr, title, startS, endS, plotting=FALSE)
     #View(timeArray)
     df <- data.frame(time_milli = timeArray, amplitude = s1)  
     
-    max_value <- (as.integer(max(df$time)))
-    spliting <- seq(0,max_value,max_value/10)
+    max_value <- round(max(df$time),2)
+    spliting <- seq(0,max_value,1)
     
     returnValue <- ggplot(df, aes(x=time_milli, y=amplitude))  +
       geom_line() +
@@ -49,8 +52,10 @@ getMFCCfeatureBy <- function(addr, title, startS, endS, plotting=FALSE)
       theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
             axis.text.x = element_text(angle=40,hjust=1,vjust=1))
     
-    rect <- data.frame(xmin=startS, xmax=endS, ymin=-Inf, ymax=Inf)
-    returnValue <- returnValue + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill="blue", inherit.aes = FALSE)
+    if(setbtw){
+      rect <- data.frame(xmin=startS, xmax=endS, ymin=-Inf, ymax=Inf)
+      returnValue <- returnValue + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill="blue", inherit.aes = FALSE)
+    }
     print(returnValue)
   }
 

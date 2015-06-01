@@ -35,9 +35,14 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
   df <- data.frame(time =data.sub$time, x=data.sub$x, y=data.sub$y, z=data.sub$z)
   df$mag <- sqrt((data.sub$x+50)^2 + (data.sub$y+50)^2 + (data.sub$z+50)^2)
   df$mag <- df$mag - mean(df$mag)
-  
-  if(idx==9)
+  threshold<-0
+  if(idx==9 || idx ==6)
   {
+    if(idx==6)
+      threshold<-1000
+    if(idx==9)
+      threshold<-60
+    
     returnValue <- ggplot(df, aes(x=time,colour="axis")) +
       geom_line(aes(y=x, colour="X")) +
       ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
