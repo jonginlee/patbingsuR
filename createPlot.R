@@ -8,8 +8,8 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
                          set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ,windowing=FALSE) {
   data.sub <- data
   if(set_btw){
-    data.sub <- subset(data.sub, subset=(data.sub$time > start_hour ))
     data.sub <- subset(data.sub, subset=(data.sub$time < end_hour ))
+    data.sub <- subset(data.sub, subset=(data.sub$time > start_hour ))
   }
   
   if(saveFile){  

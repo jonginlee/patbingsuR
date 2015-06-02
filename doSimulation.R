@@ -18,10 +18,10 @@ doSimulation <- function(data, cut, idx, window_size, window_step, save_filename
   
   # cut 5 minute
   if(cut){
-    data.sub <- subset(data.sub, subset=(data.sub$time > 1000*3 ))
+    data.sub <- subset(data.sub, subset=(data.sub$time > 1000*2 ))
     e_idx <- nrow(data.sub)
     e_time <- data.sub$time[e_idx]
-    data.sub <- subset(data.sub, subset=(data.sub$time < (e_time - (1000*3)) ))
+    data.sub <- subset(data.sub, subset=(data.sub$time < (e_time - (1000*2)) ))
   }
   
   # Window setting
@@ -29,12 +29,46 @@ doSimulation <- function(data, cut, idx, window_size, window_step, save_filename
   
   window_num <- as.integer(nrow(data.sub)/window_step)
   window_idx <- 1
+  
+  if(plotting == TRUE)
+  {
+    
+    max_value <- (as.integer(max(data.sub$time)))
+    spliting <- seq(0,max_value,max_value/10)
+    xlablename <- "time (millisecond)"
+    
+    df <- data.frame(time =data.sub$time, x=data.sub$x, y=data.sub$y, z=data.sub$z)
+    #df$mag <- sqrt((data.sub$x+50)^2 + (data.sub$y+50)^2 + (data.sub$z+50)^2)
+    #df$mag <- df$mag - mean(df$mag)
+    
+    returnValue <- ggplot(df, aes(x=time,colour="axis")) +
+      geom_line(aes(y=x, colour="X")) +
+      geom_line(aes(y=y, colour="Y")) +
+      geom_line(aes(y=z, colour="Z")) +
+      #geom_line(aes(y=mag, colour="_Magnitude")) + 
+      ggtitle(paste(graph_title," (",sensor_name_list[idx],")",sep="")) + 
+      scale_color_manual(values=c("red","blue","black","violet")) +
+      xlab(paste("Time(milli)", ", window_size(", window_size,"), window_step(", window_step,")",sep="")) +
+      ylab(y_label_list[idx]) +
+      scale_x_continuous(breaks = spliting) +
+      theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+    
+    window_idx <- 1
+    for(i in 1:window_num){
+      returnValue <- returnValue + geom_vline(xintercept = data.sub$time[window_idx], colour="black", alpha=0.8)
+      window_idx <- window_idx + window_step  
+    }
+    #print(returnValue)
+  }
+  
   #  window_set <- vector(mode="list", length=(31 - 12) ) # extended previous 2
   #  window_set <- vector(mode="list", length=(31) ) # extended previous & CHI
   #  window_set <- vector(mode="list", length=(31+4) ) # all
   #  window_set <- vector(mode="list", length=(19+6) ) # selected
   window_set <- vector(mode="list", length=(19+6) ) # selected + 1
-  
+  window_idx <- 1
   
   #window_set <- vector(mode="list", length=(31 - 8) ) # previous work
   names(window_set) <- c("epoches","start_milli","end_milli","label",
@@ -74,6 +108,9 @@ doSimulation <- function(data, cut, idx, window_size, window_step, save_filename
     if(var(window_df$saxis)>0.05){
       epoch<-1
       label<-"TODO"
+      rect <- data.frame(xmin=data.sub$time[window_idx], xmax=data.sub$time[window_idx+nrow(window_data)-2], ymin=-Inf, ymax=Inf)
+      returnValue <- returnValue + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill="blue", inherit.aes = FALSE)        
+      
     }else{
       epoch<-0
       label<-"sleep"
@@ -103,42 +140,17 @@ doSimulation <- function(data, cut, idx, window_size, window_step, save_filename
   }
   window_set <- window_set[-1,]
   #View(window_set)
-  write.csv(window_set, file=paste("./data_csv/",save_filename,".csv",sep=""), row.names=T)
-  print(paste("* window_num",window_num))
-  print(paste("* saved file: ", save_filename,".csv", sep=""))
   
-  max_value <- (as.integer(max(data.sub$time)))
-  spliting <- seq(0,max_value,max_value/10)
-  
-  df <- data.frame(time =data.sub$time, x=data.sub$x, y=data.sub$y, z=data.sub$z)
-  df$mag <- sqrt((data.sub$x+50)^2 + (data.sub$y+50)^2 + (data.sub$z+50)^2)
-  df$mag <- df$mag - mean(df$mag)
-  
-  
-  if(plotting == TRUE)
-  {
-    
-    returnValue <- ggplot(df, aes(x=time,colour="axis")) +
-      geom_line(aes(y=x, colour="X")) +
-      geom_line(aes(y=y, colour="Y")) +
-      geom_line(aes(y=z, colour="Z")) +
-      #geom_line(aes(y=mag, colour="_Magnitude")) + 
-      ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
-      scale_color_manual(values=c("red","blue","black","violet")) +
-      xlab(xlablename) +
-      ylab(y_label_list[idx]) +
-      scale_x_continuous(breaks = spliting) +
-      theme_bw() +
-      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
-            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
-    
-    window_idx <- 1
-    for(i in 1:window_num){
-      returnValue <- returnValue + geom_vline(xintercept = data.sub$time[window_idx], colour="black", alpha=0.8)
-      window_idx <- window_idx + window_step  
-    }
-    print(returnValue)
+  if(save_filename!=FALSE){
+    write.csv(window_set, file=paste("./data_csv/",save_filename,".csv",sep=""), row.names=T)
+    print(paste("* window_num",window_num))
+    print(paste("* saved file: ", save_filename,".csv", sep=""))
   }
+
+  
+  if(plotting)
+    print(returnValue)
+
   
 }
 

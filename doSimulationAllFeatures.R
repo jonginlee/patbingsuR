@@ -25,7 +25,7 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
       labelname <- non_scratch_file[i]
       print(paste("filename",labelname))
       data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
-      doSimulationAllFeatures(data, TRUE, idx, window_size, window_stp, labelname, plotting,delay=delay)
+      doSimulationAllFeatures(data, FALSE, idx, window_size, window_stp, labelname, plotting,delay=delay)
       t<-autolabeling(paste(labelname,".csv",sep=""), "non", TRUE)
       
       if(length(sum_data)==0)

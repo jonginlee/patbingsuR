@@ -8,6 +8,7 @@ library("signal", lib.loc="/usr/local/lib/R/site-library")
 
 
 # 0521 scratch file creating!!
+## scratching
 
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(1_57_38)", TRUE, "0521",TRUE, getMilliFromHMS(1,57,30,TRUE,1,41,51), getMilliFromHMS(1,57,55,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_14_16)", TRUE, "0521",TRUE, getMilliFromHMS(3,14,13,TRUE,1,41,51), getMilliFromHMS(3,14,30,TRUE,1,41,51))
@@ -31,12 +32,31 @@ detectScratchMovs(data_watch_0521_walking_3_55_20 , 8, "scratching_data0521(3_55
 detectScratchMovs(data_watch_0521_walking_4_21_17 , 8, "scratching_data0521(4_21_17)", 50, 25, smodel3)
 
 
+## turning over
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(2_45_02)", TRUE, "0521",TRUE, getMilliFromHMS(2,45,00,TRUE,1,41,51), getMilliFromHMS(2,45,12,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_07_46)", TRUE, "0521",TRUE, getMilliFromHMS(3,07,36,TRUE,1,41,51), getMilliFromHMS(3,08,00,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_38_20)", TRUE, "0521",TRUE, getMilliFromHMS(3,38,15,TRUE,1,41,51), getMilliFromHMS(3,38,30,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(4_40_18)", TRUE, "0521",TRUE, getMilliFromHMS(4,40,13,TRUE,1,41,51), getMilliFromHMS(4,40,33,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(4_53_23)", TRUE, "0521",TRUE, getMilliFromHMS(4,53,18,TRUE,1,41,51), getMilliFromHMS(4,53,33,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(5_12_04)", TRUE, "0521",TRUE, getMilliFromHMS(5,12,00,TRUE,1,41,51), getMilliFromHMS(5,12,14,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(5_23_31)", TRUE, "0521",TRUE, getMilliFromHMS(5,23,26,TRUE,1,41,51), getMilliFromHMS(5,23,45,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(5_42_37)", TRUE, "0521",TRUE, getMilliFromHMS(5,42,35,TRUE,1,41,51), getMilliFromHMS(5,42,50,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(6_47_09)", TRUE, "0521",TRUE, getMilliFromHMS(6,47,08,TRUE,1,41,51), getMilliFromHMS(6,47,24,TRUE,1,41,51))
+
+## stretching
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(2_07_47)", TRUE, "0521",TRUE, getMilliFromHMS(2,07,35,TRUE,1,41,51), getMilliFromHMS(2,07,58,TRUE,1,41,51))
+
+## quick movements (10x)
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(2_12_43)", TRUE, "0521",TRUE, getMilliFromHMS(2,12,38,TRUE,1,41,51), getMilliFromHMS(2,12,53,TRUE,1,41,51))
+
+
+
+
 # 0520 scratch file creating!!
 
 createPlot(data_watch_intentservice1_05_20_jongin, 8, "scratching_data0520(2_30_41)", TRUE, "0520",TRUE, getMilliFromHMS(2,30,35,TRUE,2,15,38), getMilliFromHMS(2,31,0,TRUE,2,15,38))
 createPlot(data_watch_intentservice1_05_20_jongin, 8, "scratching_data0520(06_07_00)", TRUE, "0520",TRUE, getMilliFromHMS(6,6,55,TRUE,2,15,38), getMilliFromHMS(6,7,20,TRUE,2,15,38))
 createPlot(data_watch_intentservice1_05_20_jongin, 8, "scratching_data0520(06_11_24)", TRUE, "0520",TRUE, getMilliFromHMS(6,11,20,TRUE,2,15,38), getMilliFromHMS(6,11,40,TRUE,2,15,38))
-
 
 test_data <- getDataset(c(
   "scratching_data0521(1_57_38)", 
@@ -107,24 +127,31 @@ write.csv(sum_data, file=paste("./data_raw/testsetForWeka.txt",sep=""), row.name
 for(i in c(1,3,8))
 {
   tt<- getDataset2(c(
+    "data_watch20150412_scratching_xy",
     "data_watch20150412_scratching_x",
     "data_watch20150412_scratching_y",
     "data_watch20150412_scratching_z",
     "data_watch20150413_eunji_scratch",
     "data_watch20150413_eunji_scratch_2",
     "data_watch20150413_seungho",
-    "data_watch20150413_seungho_3"
-  ), c(
-    "data_watch20150412_normal",
-    "data_watch20150412_normal_2",
-    "data_watch20150413_normal4",
-    "data_watch20150413_normal3"
-  ),i, window_size, window_stp, FALSE, c(
+    "data_watch20150413_seungho_3",
     "data_watch20150412_scratching_no_wrist",
     "data_watch20150412_scratching_no_wrist_2",
     "data_watch20150416_scratching_no_wrist_3",
     "data_watch20150416_scratching_no_wrist_4"
-  ))
+  ), c(
+    "scratching_data0521(2_45_02)",
+    "scratching_data0521(3_07_46)",
+    "scratching_data0521(3_38_20)",
+    "scratching_data0521(4_40_18)",
+    "scratching_data0521(4_53_23)",
+    "scratching_data0521(5_12_04)",
+    "scratching_data0521(5_23_31)",
+    "scratching_data0521(5_42_37)",
+    "scratching_data0521(6_47_09)",
+    "scratching_data0521(2_07_47)",
+    "scratching_data0521(2_12_43)"
+  ),i, 150, 50, FALSE, NULL)
   
   if(i=='1'){
     sum_data <- tt[,5:length(tt)]
@@ -133,9 +160,11 @@ for(i in c(1,3,8))
   }
 
   print(paste("index : ",i, "len : ",nrow(tt) ))
+  
 }
 
-write.csv(sum_data, file=paste("./data_raw/testsetForWeka4.arff",sep=""), row.names=FALSE)
+
+write.csv(sum_data, file=paste("./data_raw/testsetForWeka5.arff",sep=""), row.names=FALSE)
 
 ================================================================================================================
 
