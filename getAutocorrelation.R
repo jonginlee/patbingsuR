@@ -24,14 +24,14 @@ getAutocorrelationV2 <- function(data)
   max <- 0 
   maxlag <- 0
   v <- 0
-  for( i in 10:(n-1)){
+  for( i in 5:(n-5)){
     v <- getAutocorrelation(data,i)
     if( abs(v) > abs(max) ){
-      max <- v
+      max <- abs(v)
       maxlag <- i
     }
   }
-  print(paste("max-autocorrelation",max,", maxlag",maxlag))
+  #print(paste("max-autocorrelation",max,", maxlag",maxlag))
   
   return (max)
 }

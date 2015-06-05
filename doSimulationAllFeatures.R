@@ -4,12 +4,16 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
   sum_data <- NULL
   
   if(length(scr_filelist)!=0){
-    for(i in 1:length(scr_filelist))
+    for(i in 0:((length(scr_filelist)/4)-1))
     {
-      labelname <- scr_filelist[i]
+      labelname <- scr_filelist[i*4+1]
+      isCut <- scr_filelist[i*4+2]
+      startMilli <- scr_filelist[i*4+3]
+      endMilli <- scr_filelist[i*4+4]
+      
       print(paste("filename",labelname))
       data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
-      doSimulationAllFeatures(data, TRUE, idx, window_size, window_stp, labelname, plotting,delay=delay)
+      doSimulationAllFeatures(data, isCut, idx, window_size, window_stp, labelname, plotting,delay=delay, startMilli = startMilli, endMilli = endMilli)
       t<-autolabeling(paste(labelname,".csv",sep=""), "scratch")
       
       if(length(sum_data)==0)
@@ -36,12 +40,16 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
   }
   
   if(length(scr_small_scratching)!=0){
-    for(i in 1:length(scr_small_scratching))
+    for(i in 0:((length(scr_small_scratching)/4)-1))
     {
-      labelname <- scr_small_scratching[i]
+      labelname <- scr_small_scratching[4*i+1]
+      isCut <- scr_small_scratching[4*i+2]
+      startMilli <- scr_small_scratching[4*i+3]
+      endMilli <- scr_small_scratching[4*i+4]
+      
       print(paste("filename",labelname))
       data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
-      doSimulationAllFeatures(data, TRUE, idx, window_size, window_stp, labelname, plotting,delay=delay)
+      doSimulationAllFeatures(data, isCut, idx, window_size, window_stp, labelname, plotting,delay=delay, startMilli = startMilli, endMilli = endMilli)
       t<-autolabeling(paste(labelname,".csv",sep=""),"scratch_finger")
       
       if(length(sum_data)==0)
@@ -59,7 +67,7 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
 }
 
 
-doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, save_filename, plotting = FALSE, type = 1, delay=1)
+doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, save_filename, plotting = FALSE, type = 1, delay=1, startMilli=2000, endMilli=2000)
 {
   data.mag <- subset(data,grepl(list[8],data$type))
   data.sub <- subset(data,grepl(list[idx], data$type))
@@ -67,36 +75,76 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
   
   #  if(idx==8)
   #  {
-  
   #    data.sub$x <- data.sub$x - mean(data.sub$x)
   #    data.sub$y <- data.sub$y - mean(data.sub$y)
   #    data.sub$z <- data.sub$z - mean(data.sub$z)
-  #  } 
+  #  }
   
   #  data.sub <- subset(data.sub, subset=(data.sub$time > 2000 ))
   
   data.sub <- getDelayedData(data.sub, delay)
   
-  
   # cut 5 minute
   if(cut){
-    data.sub <- subset(data.sub, subset=(data.sub$time > 1000*3 ))
+    print(paste("cutting...",startMilli," - ",endMilli))
+    data.sub <- subset(data.sub, subset=(data.sub$time > as.numeric(startMilli) ))
+    data.mag <- subset(data.mag, subset=(data.mag$time > as.numeric(startMilli) ))
+    
     e_idx <- nrow(data.sub)
     e_time <- data.sub$time[e_idx]
-    data.sub <- subset(data.sub, subset=(data.sub$time < (e_time - (1000*3)) ))
+    
+    data.sub <- subset(data.sub, subset=(data.sub$time < (e_time - as.numeric(endMilli)) ))
+    data.mag <- subset(data.mag, subset=(data.mag$time < (e_time - as.numeric(endMilli)) ))
+  }
+  
+  View(data.sub)
+  window_num <- as.integer(nrow(data.sub)/window_step)
+  window_idx <- 1
+  
+  if(plotting == TRUE)
+  {
+    graph_title <- save_filename
+    max_value <- (as.integer(max(data.sub$time)))
+    spliting <- seq(0,max_value,max_value/10)
+    xlablename <- "Time (millisecond)"
+    
+    df <- data.frame(time =data.sub$time, x=data.sub$x, y=data.sub$y, z=data.sub$z)
+    #df$mag <- sqrt((data.sub$x+50)^2 + (data.sub$y+50)^2 + (data.sub$z+50)^2)
+    #df$mag <- df$mag - mean(df$mag)
+    
+    returnValue <- ggplot(df, aes(x=time,colour="axis")) +
+      geom_line(aes(y=x, colour="X")) +
+      geom_line(aes(y=y, colour="Y")) +
+      geom_line(aes(y=z, colour="Z")) +
+      #geom_line(aes(y=mag, colour="_Magnitude")) + 
+      ggtitle(paste(graph_title," (",sensor_name_list[idx],")",sep="")) + 
+      scale_color_manual(values=c("red","blue","black","violet")) +
+      xlab(paste("Time(milli)", ", window_size(", window_size,"), window_step(", window_step,")",sep="")) +
+      ylab(y_label_list[idx]) +
+      scale_x_continuous(breaks = spliting) +
+      theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+    
+    window_idx <- 1
+    for(i in 1:window_num){
+      returnValue <- returnValue + geom_vline(xintercept = data.sub$time[window_idx], colour="black", alpha=0.8)
+      window_idx <- window_idx + window_step  
+    }
+    #print(returnValue)
   }
   
   # Window setting
   #print(paste("window_num : ",window_num, " nrow(data.sub) : ", nrow(data.sub), " window_step ", window_step))
   
-  window_num <- as.integer(nrow(data.sub)/window_step)
+#  window_num <- as.integer(nrow(data.sub)/window_step)
   window_idx <- 1
   #  window_set <- vector(mode="list", length=(31 - 12) ) # extended previous 2
   #  window_set <- vector(mode="list", length=(31) ) # extended previous & CHI
   #  window_set <- vector(mode="list", length=(31+4) ) # all
   #  window_set <- vector(mode="list", length=(19+6) ) # selected
   # window_set <- vector(mode="list", length=(19+6) ) # selected + 1
-  window_set <- vector(mode="list", length=(4 + 3*11 + 10) ) # selected + 1
+  window_set <- vector(mode="list", length=(4 + 3*12 + 11) ) # selected + 1
   
   sname <- list[idx]
   #window_set <- vector(mode="list", length=(31 - 8) ) # previous work
@@ -111,6 +159,8 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
                          paste(sname,"_autocor1_x",sep=""),paste(sname,"_autocor1_y",sep=""),paste(sname,"_autocor1_z",sep=""),
                          paste(sname,"_th_x",sep=""),paste(sname,"_th_y",sep=""),paste(sname,"_th_z",sep=""),
                          paste(sname,"_autocor2_x",sep=""),paste(sname,"_autocor2_y",sep=""),paste(sname,"_autocor2_z",sep=""),
+                         paste(sname,"_autocorV2_x",sep=""),paste(sname,"_autocorV2_y",sep=""),paste(sname,"_autocorV2_z",sep=""),
+                         
                          paste(sname,"_var_x",sep=""),paste(sname,"_var_y",sep=""),paste(sname,"_var_z",sep=""),
                          paste(sname,"_peakfreq_x",sep=""),paste(sname,"_peakfreq_y",sep=""),paste(sname,"_peakfreq_z",sep=""),
                          paste(sname,"_mean_avg",sep=""),
@@ -119,6 +169,8 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
                          paste(sname,"_entropy_avg",sep=""),
                          paste(sname,"_energy_avg",sep=""),
                          paste(sname,"_autocor1_avg",sep=""),
+                         paste(sname,"_autocorV2_avg",sep=""),
+                         
                          paste(sname,"_th_avg",sep=""),
                          paste(sname,"_autocor2_avg",sep=""),
                          paste(sname,"_var_avg",sep=""),
@@ -147,6 +199,9 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
     if(var(magnitude)>0.1){
       epoch<-1
       label<-"TODO"
+      rect <- data.frame(xmin=data.sub$time[window_idx], xmax=data.sub$time[window_idx+nrow(window_data)-2], ymin=-Inf, ymax=Inf)
+      returnValue <- returnValue + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill="blue", inherit.aes = FALSE)        
+      
     }else{
       epoch<-0
       label<-"sleep"
@@ -162,6 +217,7 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
            getFeatureBy(window_df,"autocorrelation",12),
            getFeatureBy(window_df,"threshold"),
            getFeatureBy(window_df,"autocorrelation", 1),
+           getFeatureBy(window_df,"autocorrelationV2"),
            getFeatureBy(window_df,"variance"),
            getFeatureBy(window_df,"peakfreq"),
            getFeatureBy(window_df,"mean",avg=TRUE),
@@ -172,52 +228,26 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
            getFeatureBy(window_df,"autocorrelation",12,avg=TRUE),
            getFeatureBy(window_df,"threshold",avg=TRUE),
            getFeatureBy(window_df,"autocorrelation", 1,avg=TRUE),
+           getFeatureBy(window_df,"autocorrelationV2",avg=TRUE),           
            getFeatureBy(window_df,"variance",avg=TRUE),
            getFeatureBy(window_df,"peakfreq",avg=TRUE)   
     )
     
-    window_set<-rbind(window_set,p)
-    
+    window_set<-rbind(window_set,p) 
     window_idx <- window_idx + window_step
   }
+  
   window_set <- window_set[-1,]
-  #View(window_set)
-  write.csv(window_set, file=paste("./data_csv/",save_filename,".csv",sep=""), row.names=T)
-  print(paste("* window_num",window_num))
-  print(paste("* saved file: ", save_filename,".csv", sep=""))
+  View(window_set)
   
-  max_value <- (as.integer(max(data.sub$time)))
-  spliting <- seq(0,max_value,max_value/10)
-  
-  df <- data.frame(time =data.sub$time, x=data.sub$x, y=data.sub$y, z=data.sub$z)
-  df$mag <- sqrt((data.sub$x+50)^2 + (data.sub$y+50)^2 + (data.sub$z+50)^2)
-  df$mag <- df$mag - mean(df$mag)
-  
-  
-  if(plotting == TRUE)
-  {
-    
-    returnValue <- ggplot(df, aes(x=time,colour="axis")) +
-      geom_line(aes(y=x, colour="X")) +
-      geom_line(aes(y=y, colour="Y")) +
-      geom_line(aes(y=z, colour="Z")) +
-      #geom_line(aes(y=mag, colour="_Magnitude")) + 
-      ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
-      scale_color_manual(values=c("red","blue","black","violet")) +
-      xlab(xlablename) +
-      ylab(y_label_list[idx]) +
-      scale_x_continuous(breaks = spliting) +
-      theme_bw() +
-      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
-            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
-    
-    window_idx <- 1
-    for(i in 1:window_num){
-      returnValue <- returnValue + geom_vline(xintercept = data.sub$time[window_idx], colour="black", alpha=0.8)
-      window_idx <- window_idx + window_step  
-    }
-    print(returnValue)
+  if(save_filename!=FALSE){
+    write.csv(window_set, file=paste("./data_csv/",save_filename,".csv",sep=""), row.names=T)
+    print(paste("* window_num",window_num))
+    print(paste("* saved file: ", save_filename,".csv", sep=""))
   }
+  
+  if(plotting)
+    print(returnValue)
   
   return (window_set)
   

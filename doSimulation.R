@@ -135,9 +135,9 @@ doSimulation <- function(data, cut, idx, window_size, window_step, save_filename
     )
     
     window_set<-rbind(window_set,p)
-    
     window_idx <- window_idx + window_step
   }
+  
   window_set <- window_set[-1,]
   #View(window_set)
   
@@ -147,10 +147,8 @@ doSimulation <- function(data, cut, idx, window_size, window_step, save_filename
     print(paste("* saved file: ", save_filename,".csv", sep=""))
   }
 
-  
   if(plotting)
     print(returnValue)
 
-  
 }
 

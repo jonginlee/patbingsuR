@@ -33,14 +33,14 @@ detectScratchMovs(data_watch_0521_walking_4_21_17 , 8, "scratching_data0521(4_21
 
 
 ## turning over
-createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(2_45_02)", TRUE, "0521",TRUE, getMilliFromHMS(2,45,00,TRUE,1,41,51), getMilliFromHMS(2,45,12,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(2_45_02)", TRUE, "0521",TRUE, getMilliFromHMS(2,45,02,TRUE,1,41,51), getMilliFromHMS(2,45,9,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_07_46)", TRUE, "0521",TRUE, getMilliFromHMS(3,07,36,TRUE,1,41,51), getMilliFromHMS(3,08,00,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_38_20)", TRUE, "0521",TRUE, getMilliFromHMS(3,38,15,TRUE,1,41,51), getMilliFromHMS(3,38,30,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(4_40_18)", TRUE, "0521",TRUE, getMilliFromHMS(4,40,13,TRUE,1,41,51), getMilliFromHMS(4,40,33,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(4_53_23)", TRUE, "0521",TRUE, getMilliFromHMS(4,53,18,TRUE,1,41,51), getMilliFromHMS(4,53,33,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(5_12_04)", TRUE, "0521",TRUE, getMilliFromHMS(5,12,00,TRUE,1,41,51), getMilliFromHMS(5,12,14,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(5_23_31)", TRUE, "0521",TRUE, getMilliFromHMS(5,23,26,TRUE,1,41,51), getMilliFromHMS(5,23,45,TRUE,1,41,51))
-createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(5_42_37)", TRUE, "0521",TRUE, getMilliFromHMS(5,42,35,TRUE,1,41,51), getMilliFromHMS(5,42,50,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(5_42_37)", TRUE, "0521",TRUE, getMilliFromHMS(5,42,37,TRUE,1,41,51), getMilliFromHMS(5,42,48,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(6_47_09)", TRUE, "0521",TRUE, getMilliFromHMS(6,47,08,TRUE,1,41,51), getMilliFromHMS(6,47,24,TRUE,1,41,51))
 
 ## stretching
@@ -124,21 +124,32 @@ write.csv(sum_data, file=paste("./data_raw/testsetForWeka.txt",sep=""), row.name
 
 ================================================================================================================
 
+  t<-doSimulationAllFeatures(data_watch20150413_seungho , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 32000, endMilli = 5000)
+  t<-doSimulationAllFeatures(data_watch20150413_seungho_3 , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 38000, endMilli = 5000)
+
+t<-doSimulationAllFeatures(data_watch20150417_scratchingtest1 , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 20*1000)
+t<-doSimulationAllFeatures(data_watch20150417_scratchingtest2 , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 20*1000,endMilli = 6000)
+t<-doSimulationAllFeatures(data_watch20150417_scratchingtest3, TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 20*1000,endMilli = 6000)
+t<-doSimulationAllFeatures(data_watch20150417_scratchingtest4, TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 15*1000,endMilli = 6000)
 for(i in c(1,3,8))
 {
   tt<- getDataset2(c(
-    "data_watch20150412_scratching_xy",
-    "data_watch20150412_scratching_x",
-    "data_watch20150412_scratching_y",
-    "data_watch20150412_scratching_z",
-    "data_watch20150413_eunji_scratch",
-    "data_watch20150413_eunji_scratch_2",
-    "data_watch20150413_seungho",
-    "data_watch20150413_seungho_3",
-    "data_watch20150412_scratching_no_wrist",
-    "data_watch20150412_scratching_no_wrist_2",
-    "data_watch20150416_scratching_no_wrist_3",
-    "data_watch20150416_scratching_no_wrist_4"
+    "data_watch20150412_scratching_x",TRUE, 2000, 2000,
+    "data_watch20150412_scratching_xy", TRUE, 2000, 2000,
+    "data_watch20150412_scratching_y",TRUE, 2000, 2000,
+    "data_watch20150412_scratching_z",TRUE, 2000, 2000,
+    "data_watch20150413_eunji_scratch",TRUE, 2000, 2000,
+    "data_watch20150413_eunji_scratch_2",TRUE, 2000, 2000,
+    "data_watch20150413_seungho",TRUE,32000,5000,
+    "data_watch20150413_seungho_3",TRUE,38000,5000,
+    "data_watch20150412_scratching_no_wrist",TRUE, 2000, 2000,
+    "data_watch20150412_scratching_no_wrist_2",TRUE, 2000, 2000,
+    "data_watch20150416_scratching_no_wrist_3",TRUE, 2000, 2000,
+    "data_watch20150416_scratching_no_wrist_4",TRUE, 2000, 2000,
+    "data_watch20150417_scratchingtest1",TRUE, 20000,2000,
+    "data_watch20150417_scratchingtest2",TRUE, 20000,6000,
+    "data_watch20150417_scratchingtest3",TRUE, 20000,6000,
+    "data_watch20150417_scratchingtest4",TRUE, 15000,6000
   ), c(
     "scratching_data0521(2_45_02)",
     "scratching_data0521(3_07_46)",
@@ -151,7 +162,7 @@ for(i in c(1,3,8))
     "scratching_data0521(6_47_09)",
     "scratching_data0521(2_07_47)",
     "scratching_data0521(2_12_43)"
-  ),i, 150, 50, FALSE, NULL)
+  ),i, 150, 50, TRUE, NULL)
   
   if(i=='1'){
     sum_data <- tt[,5:length(tt)]
@@ -164,7 +175,7 @@ for(i in c(1,3,8))
 }
 
 
-write.csv(sum_data, file=paste("./data_raw/testsetForWeka5.arff",sep=""), row.names=FALSE)
+write.csv(sum_data, file=paste("./data_raw/testsetForWeka7.arff",sep=""), row.names=FALSE)
 
 ================================================================================================================
 

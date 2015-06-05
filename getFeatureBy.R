@@ -193,8 +193,20 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
              res <- c(getAutocorrelation(window_data$x,opt_lag), getAutocorrelation(window_data$y,opt_lag), getAutocorrelation(window_data$z,opt_lag))             
            }
          },
+         autocorrelationAbs={
+           if(avg==TRUE){
+             res <- c( abs(getAutocorrelation(window_data$avg,opt_lag) ) )
+           }else{
+             res <- c(abs(getAutocorrelation(window_data$x,opt_lag)), abs(getAutocorrelation(window_data$y,opt_lag)), abs(getAutocorrelation(window_data$z,opt_lag)))             
+           }
+         },
          autocorrelationV2={ # return max autocorrelation
-           res <- c(getAutocorrelationV2(window_data$x), getAutocorrelationV2(window_data$y), getAutocorrelationV2(window_data$z))
+           if(avg==TRUE){
+             res <- c(getAutocorrelationV2(window_data$avg))
+           }
+           else{
+             res <- c(getAutocorrelationV2(window_data$x), getAutocorrelationV2(window_data$y), getAutocorrelationV2(window_data$z))
+           }
          },
          mean={
            if(avg == TRUE){

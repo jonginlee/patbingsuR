@@ -20,6 +20,17 @@ filelist <- c(
   "scratching_data0521(2_12_43)"
 )
 
+scratching_data052130746
+scratching_data052164709
+scratching_data052120747
+scratching_data052124502
+data_watch_intentservice_changing_sites<- read.table("./data_raw/data_watch_intentservice_changing_sites.txt",sep=",",header=TRUE)
+
+t<-rbind(data_watch_intentservice_4type_scratching_jongin[,1:6], data_watch_intentservice_changing_sites[,1:6])
+t<-rbind(t, scratching_data052120747[,2:7]) # 기지게
+t<-rbind(t, scratching_data052130746[,2:7]) # 
+t<-rbind(t, scratching_data052164709[,2:7])
+t<-rbind(t, scratching_data052124502[,2:7])
 
 creatingPlotsByFeaturesSensors <- function( filelist, idxlist, feature_type )
 {
@@ -31,7 +42,6 @@ creatingPlotsByFeaturesSensors <- function( filelist, idxlist, feature_type )
       name <- filelist[i]
       data <- read.table(paste("./data_raw/", name ,".txt",sep=""),sep=",",header=TRUE)
       t3 <- createPlotByFeature(name, data, idx, 150,50,feature_type,x_type = "step")
-      
       print(t3)
 
     }
@@ -41,7 +51,7 @@ creatingPlotsByFeaturesSensors <- function( filelist, idxlist, feature_type )
 
 
 createPlotByFeature <- function(graph_title, data, idx, window_size, window_step, feature_type, 
-                                 set_btw=FALSE, start_hour=1.1, end_hour=1.1, x_type="time")
+                                 set_btw=FALSE, start_hour=1.1, end_hour=1.1, x_type="time", opt_lag=12,mag=FALSE)
 {
   data.sub <- subset(data,grepl(list[idx], data$type))
   
@@ -62,10 +72,17 @@ createPlotByFeature <- function(graph_title, data, idx, window_size, window_step
   {
     #  print(c( window_idx, i))
     window_data <- getWindow(data.sub,window_idx,window_size)
-    features <- getFeatureBy(window_data, feature_type)
-    data_feature$x[i] <- features[1]
-    data_feature$y[i] <- features[2]
-    data_feature$z[i] <- features[3]
+    
+    features <- getFeatureBy(window_data, feature_type, opt_lag,avg = mag)
+    
+    if(mag)
+      data_feature$x[i] <- features[1]
+    else{
+      data_feature$x[i] <- features[1]
+      data_feature$y[i] <- features[2]
+      data_feature$z[i] <- features[3]
+    }
+    
     data_feature$step_num[i] <- i
     window_idx <- window_idx + window_step
   }
@@ -76,16 +93,14 @@ createPlotByFeature <- function(graph_title, data, idx, window_size, window_step
   spliting <- seq(0,max_value,max_value/10)
   xlablename <- "time(millisecond)"
 
-  
-  
   if(set_btw){
     data_feature$time <- data_feature$time + start_hour
   }
   
   
-  df <- data.frame(step_num = data_feature$step_num, time = data_feature$time, x=data_feature$x, y=data_feature$y, z=data_feature$z)
-  
   if(x_type=="time"){
+    df <- data.frame(step_num = data_feature$step_num, time = data_feature$time, x=data_feature$x, y=data_feature$y, z=data_feature$z)
+    
     returnValue <- ggplot(df, aes(time, y=sensor_value, color=axis)) +
       geom_line(if (feature_type=="correlation") aes(y=x, col="XY") else aes(y=x, col="X")) +
       geom_line(if (feature_type=="correlation") aes(y=y, col="XZ") else aes(y=y, col="Y")) +
@@ -106,20 +121,58 @@ createPlotByFeature <- function(graph_title, data, idx, window_size, window_step
             axis.text.x = element_text(angle=40,hjust=1,vjust=1))
     
   }else if(x_type=="step"){
-    returnValue <- ggplot(df, aes(step_num, y=sensor_value, color=axis)) +
-      geom_line(if (feature_type=="correlation") aes(y=x, col="XY") else aes(y=x, col="X")) +
-      geom_line(if (feature_type=="correlation") aes(y=y, col="XZ") else aes(y=y, col="Y")) +
-      geom_line(if (feature_type=="correlation") aes(y=z, col="YZ") else aes(y=z, col="Z")) +
-      ggtitle(paste(graph_title," - (", feature_type,", ",sensor_name_list[idx],")")) + 
-      #  coord_fixed(ratio=1/4) +
-      xlab(paste("window step index","(size:",window_size,",step:",window_step,")") ) +
-      ylab(paste(feature_type," value"))+
-      #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
-      scale_x_continuous(breaks = seq(0,window_num+1,as.integer(window_num/10))) +
+    
+  
+    df2 <- data.frame(time =1:length(data.sub$time), x=data.sub$x, y=data.sub$y, z=data.sub$z)
+    
+    if(mag)
+    {   
+      df <- data.frame(step_num = data_feature$step_num, 
+                       x=data_feature$x)
+      returnValue <- ggplot(df, aes(step_num, y=sensor_value, color=axis)) +
+           geom_line(if (feature_type=="correlation") aes(y=x, col="XY") else aes(y=x, col="X")) +
+           ggtitle(paste(graph_title," - (", feature_type,", ",sensor_name_list[idx],")")) + 
+           #  coord_fixed(ratio=1/4) +
+           xlab(paste("window step index","(size:",window_size,",step:",window_step,")") ) +
+           ylab(paste(feature_type," value"))+
+           #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
+           scale_x_continuous(breaks = seq(0,window_num+1,as.integer(window_num/10))) +
+           theme_bw() +
+           theme(panel.border = element_blank(), axis.line = element_line(colour="black"))
+      
+    }else{
+      df <- data.frame(step_num = data_feature$step_num, 
+                       x=data_feature$x, y=data_feature$y, z=data_feature$z)
+      returnValue <- ggplot(df, aes(step_num, y=sensor_value, color=axis)) +
+        geom_line(if (feature_type=="correlation") aes(y=x, col="XY") else aes(y=x, col="X")) +
+        geom_line(if (feature_type=="correlation") aes(y=y, col="XZ") else aes(y=y, col="Y")) +
+        geom_line(if (feature_type=="correlation") aes(y=z, col="YZ") else aes(y=z, col="Z")) +
+        ggtitle(paste(graph_title," - (", feature_type,", ",sensor_name_list[idx],")")) + 
+        #  coord_fixed(ratio=1/4) +
+        xlab(paste("window step index","(size:",window_size,",step:",window_step,")") ) +
+        ylab(paste(feature_type," value"))+
+        #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
+        scale_x_continuous(breaks = seq(0,window_num+1,as.integer(window_num/10))) +
+        theme_bw() +
+        theme(panel.border = element_blank(), axis.line = element_line(colour="black"))
+    }
+
+    
+    returnValue2 <- ggplot(df2, aes(x=time,colour="axis")) +
+      geom_line(aes(y=x, colour="X")) +
+      geom_line(aes(y=y, colour="Y")) +
+      geom_line(aes(y=z, colour="Z")) +
+      ggtitle(paste(graph_title," (",sensor_name_list[idx],")",sep="")) + 
+      scale_color_manual(values=c("red","blue","violet")) +
+      xlab("time order") +
+      ylab(y_label_list[idx]) +
+      scale_x_continuous(breaks = spliting) +
       theme_bw() +
-      theme(panel.border = element_blank(), axis.line = element_line(colour="black"))
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
   }
   
+  print(returnValue2)
   return (returnValue)
   
 }
