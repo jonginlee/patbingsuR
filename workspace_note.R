@@ -177,6 +177,10 @@ for(i in c(1,3,8))
 
 write.csv(sum_data, file=paste("./data_raw/testsetForWeka7.arff",sep=""), row.names=FALSE)
 
+selected <- > sum_data[c(1,49,50,51,82,83,84,88,111,112,113,123,124,125)]
+
+
+View(selected)
 ================================================================================================================
 
 t<-doSimulationAllFeatures(data_watch20150412_scratching_x , TRUE, 2, window_size, window_stp, "labelname", FALSE,delay=1)

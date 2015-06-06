@@ -3,6 +3,91 @@
 #maxi<-0
 #http://www.abecedarical.com/zenosamples/zs_complexnumbers.html
 
+
+getPeakRatioFeature<-function(power, freq, cutoff=0.005, type=1, ploting=FALSE, title="no")
+{
+  cutoff<-0.0005
+  p <- findPeaks(power)
+  p <- p-1
+  max <- 0
+  maxP <- 0
+  #View(power)
+  #View(p)
+  if(length(p)!=0)
+  {
+    for(i in 1:length(p))
+    {
+      if(power[p[i]]>max){
+        maxP <- p[i]
+        max <- power[p[i]]
+      }
+    }
+  }
+  
+  
+  if(freq[maxP-1]==0){
+    rect <- data.frame(xmin=freq[maxP-1], xmax=freq[maxP+2], ymin=-Inf, ymax=Inf)
+    x <- c(freq[maxP-1], freq[maxP], freq[maxP+1], freq[maxP+2])
+    y <- c(power[maxP-1], power[maxP], power[maxP+1], power[maxP+2])
+  }else{
+    rect <- data.frame(xmin=freq[maxP-2], xmax=freq[maxP+2], ymin=-Inf, ymax=Inf)
+    x <- c(freq[maxP-2], freq[maxP-1], freq[maxP], freq[maxP+1], freq[maxP+2])
+    y <- c(power[maxP-2], power[maxP-1], power[maxP], power[maxP+1], power[maxP+2])
+  }
+  
+  
+  A <- integrateTrapezoid(x, y)
+  left <- integrateTrapezoid(freq, power)
+  peakSum <- sum(power[p])
+  
+  if(ploting==TRUE){
+    print(paste("peak - integrate",A,"sum",sum(y),"peakValue",power[maxP],"peakSum",peakSum))  
+    print(paste("ratio",A/left,"peakRatio",power[maxP]/peakSum))      
+  }
+  
+  returnValue <- 0
+  if(length(p)==0){
+    returnValue <- 0
+  }else if(type==1){
+    returnValue <- power[maxP]/peakSum
+  }else if(type==2){
+    returnValue <- A/left
+  }
+  
+  sampling.rate <- 50
+  max_value <- max(sampling.rate/2)
+  spliting <- seq(0,max_value,max_value/10)
+  
+  if(ploting == TRUE)
+  {
+    df <- data.frame(fre = freq, perM = power)  
+    
+    graphTemp <- ggplot(df, aes(x=fre, colour="axis")) +
+      geom_line(aes(y=perM, colour="axis")) +
+      #geom_point() +
+      #geom_point(data = d2, aes(y=po,colour="red")) +
+      ggtitle(paste("Power Spectrum",title)) + 
+      #  coord_fixed(ratio=1/4) +
+      xlab("Frequency (Hz)") +
+      ylab("Power") +
+      scale_color_manual(values=c("red","blue","black","violet")) +
+      scale_x_continuous(breaks = spliting) +
+      #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
+      #scale_x_continuous(breaks = seq(start_time,end_time,(as.integer((end_time-start_time)/10)) )) +
+      #scale_x_continuous(breaks = 10) +
+      theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+    graphTemp <- graphTemp + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill="blue", inherit.aes = FALSE)        
+    graphTemp <- graphTemp + geom_vline(xintercept = df$fre[p], alpha=1, colour="red",linetype=4)
+    print(graphTemp) 
+  }
+  
+  return (returnValue)
+}
+
+
+
 getPeakFrequency <- function(data_z)
 {
   N <- length(data_z)
@@ -168,7 +253,7 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
              nUniquePts <- ceiling((n+1)/2)
              freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
              
-             df <- data.frame(fre = freqArray, perX = Px, perY = Py, perZ = Pz)  
+             df <- data.frame(fre = freqArray, perX = Px)  
              
              res <- c( getPeakRatioFeature(df$perX,df$fre, 0.005,1,FALSE) )
            }else{
