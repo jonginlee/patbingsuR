@@ -10,6 +10,14 @@ library("signal", lib.loc="/usr/local/lib/R/site-library")
 # 0521 scratch file creating!!
 ## scratching
 
+scratching_real <- c("scratching_data0521(1_57_38)",
+                     "scratching_data0521(3_14_16)",
+                     "scratching_data0521(3_15_58)",
+                     "scratching_data0521(3_42_22)",
+                     "scratching_data0521(3_55_20)",
+                     "scratching_data0521(4_21_17)"
+                     )
+
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(1_57_38)", TRUE, "0521",TRUE, getMilliFromHMS(1,57,30,TRUE,1,41,51), getMilliFromHMS(1,57,55,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_14_16)", TRUE, "0521",TRUE, getMilliFromHMS(3,14,13,TRUE,1,41,51), getMilliFromHMS(3,14,30,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_15_58)", TRUE, "0521",TRUE, getMilliFromHMS(3,15,55,TRUE,1,41,51), getMilliFromHMS(3,16,12,TRUE,1,41,51))
@@ -33,7 +41,7 @@ detectScratchMovs(data_watch_0521_walking_4_21_17 , 8, "scratching_data0521(4_21
 
 
 ## turning over
-createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(2_45_02)", TRUE, "0521",TRUE, getMilliFromHMS(2,45,02,TRUE,1,41,51), getMilliFromHMS(2,45,9,TRUE,1,41,51))
+createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(2_45_02)", TRUE, "0521",TRUE, getMilliFromHMS(2,44,55,TRUE,1,41,51), getMilliFromHMS(2,45,15,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_07_46)", TRUE, "0521",TRUE, getMilliFromHMS(3,07,36,TRUE,1,41,51), getMilliFromHMS(3,08,00,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(3_38_20)", TRUE, "0521",TRUE, getMilliFromHMS(3,38,15,TRUE,1,41,51), getMilliFromHMS(3,38,30,TRUE,1,41,51))
 createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(4_40_18)", TRUE, "0521",TRUE, getMilliFromHMS(4,40,13,TRUE,1,41,51), getMilliFromHMS(4,40,33,TRUE,1,41,51))
@@ -131,6 +139,7 @@ t<-doSimulationAllFeatures(data_watch20150417_scratchingtest1 , TRUE, 8, 150, 50
 t<-doSimulationAllFeatures(data_watch20150417_scratchingtest2 , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 20*1000,endMilli = 6000)
 t<-doSimulationAllFeatures(data_watch20150417_scratchingtest3, TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 20*1000,endMilli = 6000)
 t<-doSimulationAllFeatures(data_watch20150417_scratchingtest4, TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 15*1000,endMilli = 6000)
+
 for(i in c(1,3,8))
 {
   tt<- getDataset2(c(
@@ -169,7 +178,7 @@ for(i in c(1,3,8))
   }else{
     sum_data <- c(sum_data,tt[,6:length(tt)])
   }
-
+  
   print(paste("index : ",i, "len : ",nrow(tt) ))
   
 }
@@ -177,10 +186,17 @@ for(i in c(1,3,8))
 
 write.csv(sum_data, file=paste("./data_raw/testsetForWeka7.arff",sep=""), row.names=FALSE)
 
-selected <- > sum_data[c(1,49,50,51,82,83,84,88,111,112,113,123,124,125)]
+selected <- sum_data[c(1,49,50,51,82,83,84,88,111,112,113,123,124,125)]
+data<-as.data.frame(selected)
+data$label <- factor(data$label)
+
+ML_method <- "J48"
+train_control <- trainControl(method="cv", number=10)
+model <- train(label~., data=data, trControl = train_control,  method=ML_method)
 
 
-View(selected)
+
+
 ================================================================================================================
 
 t<-doSimulationAllFeatures(data_watch20150412_scratching_x , TRUE, 2, window_size, window_stp, "labelname", FALSE,delay=1)
