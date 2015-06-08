@@ -1,3 +1,266 @@
+detectScratchMovs2(c( "data_watch20150412_scratching_x",TRUE, 2000, 2000), TRUE, 
+                   c(1,3,8), c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), 8, 150, 50, gmodel, TRUE )
+
+detectScratchMovs2(c( "scratching_data0521(2_45_02)",FALSE, 2000, 2000), FALSE, 
+                   c(1,3,8), c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), 8, 150, 50, gmodel, TRUE )
+
+
+detectScratchMovs2 <- function(fileinfo, isscratch, sensor_indexes, selected_indexs, idx, window_size, window_step, model,
+                               fileWrite=FALSE, delay=1, plotting=FALSE , isTraindata = TRUE,thresholdvar=0.1)
+{
+
+  if(length(fileinfo)!=0){
+    labelname <- fileinfo[1]
+    set_btw <- fileinfo[2]
+    startMilli <- fileinfo[3]
+    endMilli <- fileinfo[4]
+    
+    data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
+    print(paste("read \"",labelname,"\" complete! "))
+  }
+  
+  data.mag <- subset(data, grepl(list[8],data$type))
+  data.sub <- subset(data, grepl(list[idx], data$type))
+  
+  if(set_btw){
+    data.sub <- subset(data.sub, subset=(data.sub$time > as.numeric(startMilli) ))
+    data.mag <- subset(data.mag, subset=(data.mag$time > as.numeric(startMilli) ))
+    
+    e_idx <- nrow(data.sub)
+    e_time <- data.sub$time[e_idx]
+    
+    data.sub <- subset(data.sub, subset=(data.sub$time < (e_time - as.numeric(endMilli)) ))
+    data.mag <- subset(data.mag, subset=(data.mag$time < (e_time - as.numeric(endMilli)) ))
+    print(paste("cutting...",startMilli," - ",endMilli, " complete! "))
+    
+  }
+  
+  #data.sub <- getDelayedData(data.sub, delay)
+  
+  df <- data.frame(time_milli = data.sub$time, x=(data.sub$x), y=(data.sub$y), z=(data.sub$z) )
+  df$magnitude=sqrt( (df$x+50)^2 + (df$y+50)^2 + (df$z+50)^2 )
+  df$magnitude <- df$magnitude - mean(df$magnitude)
+  
+  returnValue <- ggplot(df, aes(x=time_milli)) +
+    #geom_point() +
+    geom_line(aes(y=x, col="X")) +
+    geom_line(aes(y=y, col="Y")) +
+    geom_line(aes(y=z, col="Z")) + 
+    #    geom_line(aes(y=magnitude, col="mag")) +
+    #geom_line(aes(y=st, col="stationary"))
+    ggtitle(paste(labelname," - (",sensor_name_list[idx],")")) + 
+    #  coord_fixed(ratio=1/4) +
+    xlab(paste("Time(milli)", ", window_size(", window_size,"), window_step(", window_step,")",sep="")) +
+    ylab(y_label_list[idx])+
+    scale_x_continuous(breaks = seq(0,(as.integer(max(data.sub$time))),5000)) +
+    #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
+    #    scale_x_continuous(breaks = spliting) +
+    theme_bw() +
+    theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+          axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+  
+  df$smooth.spline = predict(smooth.spline(df$time_milli, df$magnitude, spar = 0.3), df$time_milli)$y
+  
+  returnValue2 <- ggplot(df, aes(x=time_milli)) +
+    #geom_point() +
+    #    geom_line(aes(y=x, col="X")) +
+    #    geom_line(aes(y=y, col="Y")) +
+    #    geom_line(aes(y=z, col="Z")) + 
+    geom_line(aes(y=magnitude, col="magnitude")) +
+    geom_line(aes(y=smooth.spline, col="magnitude_smooth")) +
+    #geom_line(aes(y=st, col="stationary"))
+    ggtitle(paste(labelname," - (",sensor_name_list[idx],")")) + 
+    #  coord_fixed(ratio=1/4) +
+    xlab(paste("Time(milli)", ", window_size(", window_size,"), window_step(", window_step,")",sep="")) +
+    ylab(y_label_list[idx])+
+    scale_x_continuous(breaks = seq(0,(as.integer(max(data.sub$time))),5000)) +
+    #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
+    #    scale_x_continuous(breaks = spliting) +
+    theme_bw() +
+    theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+          axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+  
+  
+  #  print(paste("window_num : ",window_num, " nrow(data.sub) : ", nrow(data.sub), " window_step ", window_step))
+  window_num <- as.integer(nrow(data.sub)/window_step)
+  window_idx <- 1
+
+  if(isscratch)
+    window_set<-getWindowset(fileinfo, NULL, sensor_indexes, window_size, window_step, selected_indexs, plotting=FALSE, thresholdvar =thresholdvar)
+  else
+    window_set<-getWindowset(NULL, fileinfo, sensor_indexes, window_size, window_step, selected_indexs, plotting=FALSE, thresholdvar =thresholdvar)
+  
+  
+  if(fileWrite==TRUE)
+    write.csv(window_set, file=paste("./data_csv/",labelname,".csv",sep=""), row.names=T)
+  
+  window_set$label <- factor(window_set$label)
+  predictions <- predict(model, window_set) # selected
+  View(predictions)
+  
+  if(isTraindata){
+    if(isscratch)
+      label_tag <- "scratch"
+    else
+      label_tag <- "non"
+    
+    t<-autolabeling(paste(labelname,".csv",sep=""), label_tag)
+    filter <- "scratch|non"
+    t <- subset(t, grepl(filter, t$label))
+    View(t)
+    
+    sumres<-1
+    if(length(t$label) == length(predictions))
+    {
+      for(i in 1:length(t$label))
+      {
+        if( (t$label[i]=="scratch") & ((predictions[i]=="scratch") | (predictions[i]=="scratch_finger")) )
+          sumres[i] <- "tp"
+        else if( (t$label[i]=="non") & (predictions[i]=="non") )
+          sumres[i] <- "tn"
+        else if( (t$label[i]=="non") & ((predictions[i]=="scratch") | (predictions[i]=="scratch_finger")) )
+          sumres[i] <- "fp"
+        else if( (t$label[i]=="scratch") & (predictions[i]=="non") )
+          sumres[i] <- "fn"
+      }
+    }
+    
+    sumres <- as.factor(sumres)
+    print(summary(sumres))
+  }
+    
+  
+  
+  window_idx <- 1
+  pre_idx <- 1
+  ei <- 1  
+  
+  epoches <- vector(mode="list", length=(3))
+  names(epoches) <- c("number", "start_milli","end_milli")
+  
+  starting = FALSE
+  continue = FALSE
+  epoches$number[ei] <- 1
+  epoches$start_milli[ei] <- 1 
+  epoches$end_milli[ei] <- 1
+  
+  returnValue_2 <- returnValue
+  
+  for(i in 1:window_num)
+  {        
+    window_data_for_mag <- getWindow(data.mag, window_idx, window_size)
+    magnitude <- sqrt( (window_data_for_mag$x+50)^2+(window_data_for_mag$y+50)^2+(window_data_for_mag$z+50)^2)
+    magnitude <- magnitude - mean(magnitude)
+    
+    window_data <- getWindow(data.sub,window_idx,window_size)
+    #print(paste("nrow-window_data",nrow(window_data)))
+    window_df <- data.frame(x=window_data$x, y=window_data$y, 
+                            z=window_data$z, saxis=(window_data$x+window_data$y+window_data$z), magnitude=sqrt(window_data$x^2+window_data$y^2+window_data$z^2))
+    
+    
+    if(var(magnitude)>thresholdvar){
+      
+      if(isTraindata){
+        if( (predictions[pre_idx]!="scratch") & (t$label[pre_idx]=="scratch") ) {
+          defined_color <-"gray"
+          rect <- data.frame(xmin=data.sub$time[window_idx], xmax=data.sub$time[window_idx+nrow(window_data)-2], ymin=-Inf, ymax=Inf)
+          returnValue_2 <- returnValue_2 + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill=defined_color, inherit.aes = FALSE)       
+          
+        }else if( (predictions[pre_idx]=="scratch") & (t$label[pre_idx]!="scratch")  ) {
+          defined_color <- "yellow"
+          rect <- data.frame(xmin=data.sub$time[window_idx], xmax=data.sub$time[window_idx+nrow(window_data)-2], ymin=-Inf, ymax=Inf)
+          returnValue_2 <- returnValue_2 + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill=defined_color, inherit.aes = FALSE)       
+          
+        }
+      }
+                
+        
+      if( (predictions[pre_idx]=="scratch") ){        
+        #print(paste("pre_idx",pre_idx))
+        if(starting==FALSE){
+          epoches$number[ei] = i
+          epoches$start_milli[ei] = window_data$time[1]
+          epoches$end_milli[ei] = window_data$time[nrow(window_data)]
+          starting=TRUE
+          returnValue <- returnValue +  geom_vline(xintercept = epoches$start_milli[ei], alpha=1, colour="blue")      
+          returnValue2 <- returnValue2 +  geom_vline(xintercept = epoches$start_milli[ei], alpha=1, colour="blue")      
+          
+        }else if( window_data$time[1] <= epoches$end_milli[ei] ){
+          continue=TRUE
+          epoches$end_milli[ei] <- window_data$time[nrow(window_data)]
+        }
+        
+        #        if(predictions2$scratch[pre_idx] == 1)
+        #          defined_color <- "red"
+        #        else if(predictions2$scratch[pre_idx] >= 0.8)
+        #          defined_color <- "blue"
+        #        else if(predictions2$scratch[pre_idx] >= 0.6)
+        #          defined_color <- "yellow"
+        #        else
+        #          defined_color <- "gray"
+        
+        if(predictions[pre_idx]=="scratch")
+          defined_color <- "red"
+
+        
+        if( (predictions[pre_idx]=="scratch") ){    
+          rect <- data.frame(xmin=data.sub$time[window_idx], xmax=data.sub$time[window_idx+nrow(window_data)-2], ymin=-Inf, ymax=Inf)
+          returnValue <- returnValue + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill=defined_color, inherit.aes = FALSE)       
+        }
+        
+      }else if( starting==TRUE ) {
+        if(window_data$time[1] >= epoches$end_milli[ei])
+        {
+          ## ending part
+          epoch = subset(df, (time_milli>=epoches$start_milli[ei]) & (time_milli<=epoches$end_milli[ei]))
+          #print(paste("epoch_len",nrow(epoch),nrow(df)))
+          #createIntegralPlot(epoch,"mag", paste("mag","(",start_milli,end_milli,")"), "accel" ,sparValue,sparValue,sparValue)
+          
+          starting=FALSE
+          returnValue <- returnValue +  geom_vline(xintercept = epoches$end_milli[ei], alpha=1, colour="red",linetype=4)
+          returnValue2 <- returnValue2 +  geom_vline(xintercept = epoches$end_milli[ei], alpha=1, colour="red",linetype=4)          
+          ei <- ei + 1         
+        }
+      }
+      
+      pre_idx <- pre_idx +1
+    }else if( starting==TRUE ) {
+      if(window_data$time[1] >= epoches$end_milli[ei])
+      {
+        ## ending part
+        epoch = subset(df, (time_milli>=epoches$start_milli[ei]) & (time_milli<=epoches$end_milli[ei]))
+        #print(paste("epoch_len",nrow(epoch),nrow(df)))
+        #createIntegralPlot(epoch,"mag", paste("mag","(",start_milli,end_milli,")"), "accel" ,sparValue,sparValue,sparValue)        
+        
+        starting=FALSE
+        returnValue <- returnValue +  geom_vline(xintercept = epoches$end_milli[ei], alpha=1, colour="red",linetype=4)
+        returnValue2 <- returnValue2 +  geom_vline(xintercept = epoches$end_milli[ei], alpha=1, colour="red",linetype=4)
+        ei <- ei + 1         
+      }
+    }
+    
+    returnValue <- returnValue + geom_vline(xintercept = data.sub$time[window_idx], colour="black", alpha=0.8)
+    returnValue_2 <- returnValue_2 + geom_vline(xintercept = data.sub$time[window_idx], colour="black", alpha=0.8)
+    
+    window_idx <- window_idx + window_step
+    #  print(paste("window_idx", window_idx, data.sub$time[window_idx]))      
+  }
+  
+  
+  
+  View(epoches)
+  print(paste("ei",ei))
+  
+  print(returnValue)
+  print(returnValue2)
+  if(isTraindata)
+    print(returnValue_2)
+  
+  
+  
+}
+
+###################################################################################
 
 detectScratchMovs <- function(data, idx, graph_title,  window_size, window_step, model,sparValue=0.3, fileWrite=FALSE, set_btw=FALSE, start_milli=0.1, end_milli=0.1,delay=1)
 {

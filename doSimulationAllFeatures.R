@@ -1,4 +1,4 @@
-getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_stp, plotting = FALSE, scr_small_scratching = NULL,delay=1)
+getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_stp, plotting = FALSE, scr_small_scratching = NULL,delay=1,thresholdvar = 0.1)
 {
   filter <- "scratch|non|scratch_finger"
   sum_data <- NULL
@@ -13,7 +13,7 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
       
       print(paste("filename",labelname))
       data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
-      doSimulationAllFeatures(data, isCut, idx, window_size, window_stp, labelname, plotting,delay=delay, startMilli = startMilli, endMilli = endMilli)
+      doSimulationAllFeatures(data, isCut, idx, window_size, window_stp, labelname, plotting,delay=delay, startMilli = startMilli, endMilli = endMilli, thresholdvar = thresholdvar)
       t<-autolabeling(paste(labelname,".csv",sep=""), "scratch")
       
       if(length(sum_data)==0)
@@ -24,12 +24,17 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
   }
   
   if(length(non_scratch_file)!=0){
-    for(i in 1:length(non_scratch_file))
+    for(i in 0:((length(non_scratch_file)/4)-1) )
     {
-      labelname <- non_scratch_file[i]
+      labelname <- non_scratch_file[i*4+1]
+      isCut <- non_scratch_file[i*4+2]
+      startMilli <- non_scratch_file[i*4+3]
+      endMilli <- non_scratch_file[i*4+4]
+      
+      #labelname <- non_scratch_file[i]
       print(paste("filename",labelname))
       data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
-      doSimulationAllFeatures(data, FALSE, idx, window_size, window_stp, labelname, plotting,delay=delay)
+      doSimulationAllFeatures(data, FALSE, idx, window_size, window_stp, labelname, plotting,delay=delay,thresholdvar = thresholdvar)
       t<-autolabeling(paste(labelname,".csv",sep=""), "non", TRUE)
       
       if(length(sum_data)==0)
@@ -49,7 +54,7 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
       
       print(paste("filename",labelname))
       data <- read.table(paste("./data_raw/",labelname,".txt" ,sep=""), sep="," ,header=TRUE)
-      doSimulationAllFeatures(data, isCut, idx, window_size, window_stp, labelname, plotting,delay=delay, startMilli = startMilli, endMilli = endMilli)
+      doSimulationAllFeatures(data, isCut, idx, window_size, window_stp, labelname, plotting,delay=delay, startMilli = startMilli, endMilli = endMilli,thresholdvar = thresholdvar)
       t<-autolabeling(paste(labelname,".csv",sep=""),"scratch_finger")
       
       if(length(sum_data)==0)
@@ -67,7 +72,7 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
 }
 
 
-doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, save_filename, plotting = FALSE, type = 1, delay=1, startMilli=2000, endMilli=2000)
+doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, save_filename, plotting = FALSE, type = 1, delay=1, startMilli=2000, endMilli=2000, thresholdvar = 0.1)
 {
   data.mag <- subset(data,grepl(list[8],data$type))
   data.sub <- subset(data,grepl(list[idx], data$type))
@@ -196,7 +201,7 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
                             z=window_data$z, saxis=(window_data$x+window_data$y+window_data$z))
     start_milli <-paste( getHMS(window_data$hour[1]), window_data$time[1] )
     end_milli <- paste( getHMS(window_data$hour[nrow(window_data)]), window_data$time[nrow(window_data)] )
-    if(var(magnitude)>0.1){
+    if(var(magnitude)>thresholdvar){
       epoch<-1
       label<-"TODO"
       rect <- data.frame(xmin=data.sub$time[window_idx], xmax=data.sub$time[window_idx+nrow(window_data)-2], ymin=-Inf, ymax=Inf)

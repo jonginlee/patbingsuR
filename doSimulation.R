@@ -1,5 +1,5 @@
 
-doSimulation <- function(data, cut, idx, window_size, window_step, save_filename, plotting = FALSE, type = 1, delay=1)
+doSimulationC <- function(data, cut, idx, window_size, window_step, save_filename, plotting = FALSE, type = 1, delay=1)
 {
   data.sub <- subset(data,grepl(list[idx], data$type))
   data.sub$hour <- data.sub$time/(1000*60*60)
