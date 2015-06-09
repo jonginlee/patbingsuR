@@ -5,7 +5,7 @@ y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity 
 
 
 createPlot <- function(data, idx, graph_title, saveFile, source_date, 
-                         set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ,windowing=FALSE) {
+                         set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ,windowing=FALSE, cutoff=FALSE, f_l=0.3, butter_type="high") {
   data.sub <- data
   if(set_btw){
     data.sub <- subset(data.sub, subset=(data.sub$time < end_hour ))
@@ -56,6 +56,9 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
     
   }
   else{
+
+    
+    
     returnValue <- ggplot(df, aes(x=time,colour="axis")) +
       geom_line(aes(y=x, colour="X")) +
       geom_line(aes(y=y, colour="Y")) +
@@ -69,11 +72,54 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
       theme_bw() +
       theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
             axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+    
+    if(cutoff){
+      bf2 <- butter(1, (2*f_l)/(50), type=butter_type)
+      df$x <- filtfilt(bf2,df$x)
+      bf2 <- butter(1, (2*f_l)/(50), type=butter_type)
+      df$y <- filtfilt(bf2,df$y)
+      bf2 <- butter(1, (2*f_l)/(50), type=butter_type)
+      df$z <- filtfilt(bf2,df$z)
+      
+      returnValue3 <- ggplot(df, aes(x=time,colour="axis")) +
+        geom_line(aes(y=x, colour="X")) +
+        geom_line(aes(y=y, colour="Y")) +
+        geom_line(aes(y=z, colour="Z")) +
+        ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
+        scale_color_manual(values=c("red","blue","black","violet")) +
+        xlab(xlablename) +
+        ylab(y_label_list[idx]) +
+        scale_x_continuous(breaks = spliting) +
+        theme_bw() +
+        theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+              axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+      
+      print(returnValue3)
+      
+      bf2 <- butter(1, (2*f_l)/(50), type=butter_type)
+      df$mag <- filtfilt(bf2,df$mag)
+      
+      returnValue2 <- ggplot(df, aes(x=time,colour="axis")) +
+        geom_line(aes(y=mag, colour="_Magnitude")) + 
+        ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
+        scale_color_manual(values=c("red","blue","black","violet")) +
+        xlab(xlablename) +
+        ylab(y_label_list[idx]) +
+        scale_x_continuous(breaks = spliting) +
+        theme_bw() +
+        theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+              axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+      print(returnValue2)
+      
+    }
+
+
   }
 
   returnValue <- returnValue + geom_hline(aes(yintercept=threshold), colour="yellow")
   
   print(returnValue)
+  
   
   if(type==2){
     
