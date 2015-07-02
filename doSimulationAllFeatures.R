@@ -87,7 +87,7 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
   
   #  data.sub <- subset(data.sub, subset=(data.sub$time > 2000 ))
   
-  data.sub <- getDelayedData(data.sub, delay)
+  #data.sub <- getDelayedData(data.sub, delay)
   
   # cut 5 minute
   if(cut){
@@ -103,13 +103,16 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
   }
   
   View(data.sub)
-  window_num <- as.integer(nrow(data.sub)/window_step)
+  print(paste("data.sub.nrow", nrow(data.sub)))
+  window_num <- round( (nrow(data.mag)/window_step) )
+  window_num <- window_num -2
   window_idx <- 1
   
   if(plotting == TRUE)
   {
     graph_title <- save_filename
     max_value <- (as.integer(max(data.sub$time)))
+    print(paste("max_value ",max_value))
     spliting <- seq(0,max_value,max_value/10)
     xlablename <- "Time (millisecond)"
     
@@ -174,14 +177,14 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
                          paste(sname,"_entropy_avg",sep=""),
                          paste(sname,"_energy_avg",sep=""),
                          paste(sname,"_autocor1_avg",sep=""),
-                         paste(sname,"_autocorV2_avg",sep=""),
                          
                          paste(sname,"_th_avg",sep=""),
                          paste(sname,"_autocor2_avg",sep=""),
+                         paste(sname,"_autocorV2_avg",sep=""),
+                         
                          paste(sname,"_var_avg",sep=""),
-                         paste(sname,"_peakfreq_avg",sep="") 
+                         paste(sname,"_peakfreq_avg",sep="")
                          )
-  
   
   candidates_idx <- 1
   # p1  3.58333+0.013888

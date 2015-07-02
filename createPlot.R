@@ -120,6 +120,14 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
   
   print(returnValue)
   
+  line.rcharts <- hPlot(x="cyl", y="mpg_mean", group="am", data=mtcars.mean, type="line")
+  # Use this with 'Knit HTML' button
+  # line.rcharts$print(include_assets=TRUE)
+  # Use this with jekyll blog
+  line.rcharts$show('iframesrc', cdn=TRUE)
+  
+  res <- returnValue
+  
   
   if(type==2){
     
@@ -246,5 +254,5 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
     print(returnValue)
   }
 
-  
+  return (returnValue)
 }

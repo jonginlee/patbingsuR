@@ -60,6 +60,7 @@ createPlot(data_watch_intentservice1_05_21_jongin, 8, "scratching_data0521(2_12_
 
 
 
+
 # 0520 scratch file creating!!
 
 createPlot(data_watch_intentservice1_05_20_jongin, 8, "scratching_data0520(2_30_41)", TRUE, "0520",TRUE, getMilliFromHMS(2,30,35,TRUE,2,15,38), getMilliFromHMS(2,31,0,TRUE,2,15,38))
@@ -132,8 +133,8 @@ write.csv(sum_data, file=paste("./data_raw/testsetForWeka.txt",sep=""), row.name
 
 ================================================================================================================
 
-  t<-doSimulationAllFeatures(data_watch20150413_seungho , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 32000, endMilli = 5000)
-  t<-doSimulationAllFeatures(data_watch20150413_seungho_3 , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 38000, endMilli = 5000)
+t<-doSimulationAllFeatures(data_watch20150413_seungho , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 32000, endMilli = 5000)
+t<-doSimulationAllFeatures(data_watch20150413_seungho_3 , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 38000, endMilli = 5000)
 
 t<-doSimulationAllFeatures(data_watch20150417_scratchingtest1 , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 20*1000)
 t<-doSimulationAllFeatures(data_watch20150417_scratchingtest2 , TRUE, 8, 150, 50, "labelname", TRUE,delay=1,startMilli = 20*1000,endMilli = 6000)

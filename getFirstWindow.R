@@ -13,20 +13,25 @@ filelist <- c(
   "data_watch_jongin0524DATASET4_2"
 )
 
-
 filelist <- c(
-  "data_watch_0527_testset"
+  "data_watch_jongin0524DATASET4"
 )
 
 
-for(idx in c(1,2,3,7,8))
+filelist <- c(
+  "data_watch_test0617_4"
+)
+
+#for(idx in c(1,2,3,7,8))
+
+for(idx in c(1,8))
 {
 
   for(i in 1:length(filelist))
   {
     name <- filelist[i]
     data <- read.table(paste("./data_raw/", name ,".txt",sep=""),sep=",",header=TRUE)
-    t3 <- getFirstWindow(data, idx, 25, 100, TRUE, "test", 0.05, FALSE)
+    t3 <- getFirstWindow(data, idx, 17, 50, TRUE, name, 0.2, FALSE)
     
     if(i==1)
     {
@@ -42,10 +47,65 @@ for(idx in c(1,2,3,7,8))
   }
   
   print(paste("index : ",idx, "len : ",nrow(t) ))
+  
 }
 
 
 write.csv(sum_data, file=paste("./data_raw/location_test2.arff",sep=""), row.names=FALSE)
+
+
+createIntegralGraph <- function(x,y,graph_title,type="vel",plotting=FALSE)
+{
+  
+  if(type=="vel")
+  {
+    new_y <- 0
+    for(i in 1:length(y)){
+      sum <- 0
+      for(j in 1:i){
+        sum <- sum + round(y[j],digits=2)
+      }
+      new_y[i] <- sum
+    }
+    res<-new_y
+    ylabel <- "Velocity (m/s)"
+    
+  }else if(type=="loc")
+  {
+    new_y <- 0
+    for(i in 1:length(y)){
+      sum <- 0
+      for(j in 1:i){
+        sum <- sum + round(y[j],digits=2)
+      }
+      new_y[i] <- sum
+    }
+    
+    new_yy <- 0
+    for(i in 1:length(new_y)){
+      sum <- 0
+      for(j in 1:i){
+        sum <- sum + round(new_y[j],digits=2)
+      }
+      new_yy[i] <- sum
+    }
+    res<-new_yy
+    ylabel <- "distance (m/s^2)"
+  }
+
+    
+  if(plotting){
+    returnValue <- qplot(x,res, geom=c("line","point") ) + ggtitle(paste(graph_title," - (",sensor_name_list[idx],")")) + 
+      ylab(ylabel) +
+      xlab("time") +  theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"))
+    
+    print(returnValue)
+  }
+
+  return (res)
+  
+}
 
 
 
@@ -154,7 +214,22 @@ getFirstWindow <- function(data, idx, window_size, period, ploting=FALSE, graph_
                                 z=window_data$z, saxis=(window_data$x+window_data$y+window_data$z), magnitude=sqrt(window_data$x^2+window_data$y^2+window_data$z^2))  
         
         start_milli <-paste( data.sub$time[window_idx] )
-        end_milli <- paste( data.sub$time[window_idx+period] )        
+        end_milli <- paste( data.sub$time[window_idx+period] )
+        
+        tmp_x<-createIntegralGraph(window_data$time, window_data$x,paste("x-axis",start_milli,"~",end_milli),type = "vel")
+        tmp_y<-createIntegralGraph(window_data$time, window_data$y,paste("y-axis",start_milli,"~",end_milli),type = "vel")
+        tmp_z<-createIntegralGraph(window_data$time, window_data$z,paste("z-axis",start_milli,"~",end_milli),type = "vel")
+        
+        tmp_x<-createIntegralGraph(window_data$time, window_data$x,paste("x-axis",start_milli,"~",end_milli),type = "loc")
+        tmp_y<-createIntegralGraph(window_data$time, window_data$y,paste("y-axis",start_milli,"~",end_milli),type = "loc")
+        tmp_z<-createIntegralGraph(window_data$time, window_data$z,paste("z-axis",start_milli,"~",end_milli),type = "loc")      
+        
+        dis <- sqrt(tmp_x[length(tmp_x)]^2 + tmp_y[length(tmp_y)]^2 + tmp_z[length(tmp_z)]^2)
+        print(paste("x:",tmp_x[length(tmp_x)],"y:",tmp_y[length(tmp_y)],"z:",tmp_z[length(tmp_z)], "dis",sum(dis) ))
+        
+        scatterplot3d(tmp_x,tmp_y,tmp_z, pch=16, highlight.3d=TRUE,type="h", main="distance")
+        
+        
         p <- c(i,start_milli,end_milli,"TODO",
                getFeatureBy(window_df,"mean"),
                getFeatureBy(window_df,"max"),

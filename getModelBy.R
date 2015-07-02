@@ -7,6 +7,13 @@ scratching_real <- c("scratching_data0521(1_57_38)", FALSE, 0, 0,
                      "scratching_data0521(4_21_17)", FALSE, 0, 0
                     )
 
+selected <- ar_temp[selected_indexs]
+data<-as.data.frame(selected)
+print(colnames(data))
+data$label <- factor(data$label)
+train_control <- trainControl(method="cv", number=10)
+gmodel0701 <- train(label~., data=data, trControl = train_control,  method=ML_method)
+
 
 for(i in 0:((length(scratching_real)/4)-1))
 {
@@ -16,7 +23,8 @@ for(i in 0:((length(scratching_real)/4)-1))
   endMilli <- scratching_real[i*4+4]
   
   detectScratchMovs2(c( labelname, isCut, startMilli, endMilli), TRUE, 
-                     c(1,3,8), c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), 8, 150, 50, gmodel2, TRUE, isTraindata = FALSE,thresholdvar = 0.01 )
+                     c(1,3,8), c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), 8, 150, 50, gmodel0609, TRUE, isTraindata = FALSE,thresholdvar = 0.01 )
+
   
 }
 
@@ -41,7 +49,7 @@ for(i in 0:((length(non_scratch_filelist)/4)-1))
   endMilli <- non_scratch_filelist[i*4+4]
   
   detectScratchMovs2(c( labelname, isCut, startMilli, endMilli), FALSE, 
-                     c(1,3,8), c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), 8, 150, 50, gmodel2, TRUE )
+                     c(1,3,8), c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), 8, 150, 50, gmodel0609, TRUE,thresholdvar = 0.01  )
   
 }
 
@@ -70,6 +78,7 @@ scratch_filelist<- c(
   "data_watch20150417_scratchingtest3",TRUE, 42000,12000,
   "data_watch20150417_scratchingtest4",TRUE, 30000,6000
 )
+
 
 for(i in 0:((length(non_scratch_filelist)/4)-1))
 {
