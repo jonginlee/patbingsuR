@@ -4,8 +4,7 @@ scratching_real <- c("scratching_data0521(1_57_38)", FALSE, 0, 0,
                      "scratching_data0521(3_15_58)", FALSE, 0, 0,
                      "scratching_data0521(3_42_22)", FALSE, 0, 0,
                      "scratching_data0521(3_55_20)", FALSE, 0, 0,
-                     "scratching_data0521(4_21_17)", FALSE, 0, 0
-                    )
+                     "scratching_data0521(4_21_17)", FALSE, 0, 0)
 
 selected <- ar_temp[selected_indexs]
 data<-as.data.frame(selected)
@@ -15,15 +14,34 @@ train_control <- trainControl(method="cv", number=10)
 gmodel0701 <- train(label~., data=data, trControl = train_control,  method=ML_method)
 
 
-for(i in 0:((length(scratching_real)/4)-1))
+scratch_data_list <- c(
+  "jonginlee_data0623/data5", FALSE, 0, 0,
+  "jonginlee_data0623/data6", FALSE, 0, 0
+    )
+
+scratch_data_list <- c(
+  "scratching_data0521(2_45_02)",FALSE, 0, 0,
+  "scratching_data0521(3_07_46)",FALSE, 0, 0,
+  "scratching_data0521(3_38_20)",FALSE, 0, 0,
+  "scratching_data0521(4_40_18)",FALSE, 0, 0,
+  "scratching_data0521(4_53_23)",FALSE, 0, 0,
+  "scratching_data0521(5_12_04)",FALSE, 0, 0,
+  "scratching_data0521(5_23_31)",FALSE, 0, 0,
+  "scratching_data0521(5_42_37)",FALSE, 0, 0,
+  "scratching_data0521(6_47_09)",FALSE, 0, 0,
+  "scratching_data0521(2_07_47)",FALSE, 0, 0,
+  "scratching_data0521(2_12_43)",FALSE, 0, 0
+)
+
+for(i in 0:((length(scratch_data_list)/4)-1))
 {
-  labelname <- scratching_real[i*4+1]
-  isCut <- scratching_real[i*4+2]
-  startMilli <- scratching_real[i*4+3]
-  endMilli <- scratching_real[i*4+4]
+  labelname <- scratch_data_list[i*4+1]
+  isCut <- scratch_data_list[i*4+2]
+  startMilli <- scratch_data_list[i*4+3]
+  endMilli <- scratch_data_list[i*4+4]
   
   detectScratchMovs2(c( labelname, isCut, startMilli, endMilli), TRUE, 
-                     c(1,3,8), c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), 8, 150, 50, gmodel0609, TRUE, isTraindata = FALSE,thresholdvar = 0.01 )
+                     c(1,3,8), c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), 8, 150, 50, gmodel0705, TRUE, isTraindata = FALSE,thresholdvar = 0.01 )
 
   
 }

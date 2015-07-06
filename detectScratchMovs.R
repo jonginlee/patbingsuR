@@ -90,7 +90,7 @@ detectScratchMovs2 <- function(fileinfo, isscratch, sensor_indexes, selected_ind
   else
     window_set<-getWindowset(NULL, fileinfo, sensor_indexes, window_size, window_step, selected_indexs, plotting=FALSE, thresholdvar =thresholdvar)
   
-  
+  q
   if(fileWrite==TRUE)
     write.csv(window_set, file=paste("./data_csv/",labelname,".csv",sep=""), row.names=T)
   
