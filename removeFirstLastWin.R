@@ -17,11 +17,10 @@ removeFirstLastWin <- function(data)
       }else{
         start <- FALSE
       }
-      
-        
     }
-  
   }
   
   return(data)
 }
+
+

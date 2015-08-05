@@ -3,6 +3,33 @@
 #maxi<-0
 #http://www.abecedarical.com/zenosamples/zs_complexnumbers.html
 
+Px = trans_to_frequency(data.sub$x - mean(data.sub$x))
+data <- data.sub$x - mean(data.sub$x)
+
+
+
+getPowerBandBy <- function(data, from, to, sampling.rate = 50)
+{
+  avgV = trans_to_frequency(data)
+  
+  n = length(data)
+  #sampling.rate = 50 
+  nUniquePts <- ceiling((n+1)/2)
+  freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
+  
+  sum <- 0
+  for(i in 1:length(freqArray))
+  {
+    if( (from < freqArray[i]) & (freqArray[i] <= to) ){
+      #print(paste("i",i))
+      sum <- sum + avgV[i]
+    }
+    
+    if(freqArray[i] > to)
+      break
+  }
+  return(sum)
+}
 
 getPeakRatioFeature<-function(power, freq, cutoff=0.005, type=1, ploting=FALSE, title="no")
 {
@@ -154,6 +181,7 @@ getEntropy <- function(data_z)
 }
 
 
+
 getEnergy <- function(data_x)
 {
   y <- data_x - mean(data_x)
@@ -174,15 +202,265 @@ getCth <- function(data_x,th)
   return (Cnt)
 }
 
+getIntegrateSignal <- function(signal)
+{
+  require("oce")
+  res<-i
+  for(i in 1:length(signal))
+  {
+    xrange <- c(1:i)
+    yrange <- signal[1:i]
+    res[i]<-integrateTrapezoid(xrange, yrange)
+  }
+  
+  return(res)
+}
 
-getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, thr = 0.01)
+paste(sname,"_integrated_RMS_avg(PC)",sep=""),
+paste(sname,"_numPeak_avg(PC)",sep=""),
+paste(sname,"_promientPeak_avg(PC)",sep=""),
+paste(sname,"_weakPeak_avg(PC)",sep=""),
+paste(sname,"_maxAuto_avg(PC)",sep=""),
+paste(sname,"_height1stAuto_avg(PC)",sep=""),
+paste(sname,"_powerBand0_2.5avg(PC)",sep=""),
+paste(sname,"_powerBand2.5_5avg(PC)",sep=""),
+paste(sname,"_powerBand5_7.5avg(PC)",sep=""),
+paste(sname,"_powerBand7.5_10avg(PC)",sep=""),
+paste(sname,"_powerBand10_12.5avg(PC)",sep=""),
+paste(sname,"_powerBand12.5_15avg(PC)",sep=""),
+paste(sname,"_powerBand15_17.5avg(PC)",sep=""),
+paste(sname,"_powerBand17.5_20avg(PC)",sep=""),
+paste(sname,"_powerBand20_22.5avg(PC)",sep=""),
+paste(sname,"_powerBand22.5_25avg(PC)",sep="")
+
+
+
+
+getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, thr = 0.01, type = "mag", sampling.rate = 50,
+                         powerband_from=0, powerband_to=0, startLag=26)
 {
  
+  #window_data$x <- window_data$x - mean(window_data$x)
+  #window_data$y <- window_data$y - mean(window_data$y)
+  #window_data$z <- window_data$z - mean(window_data$z)
+  
   res<-0
-  window_data$mag <- sqrt( (window_data$x+50)^2 + (window_data$y+50)^2 + (window_data$z+50)^2)
-  window_data$avg <- window_data$mag - mean(window_data$mag)
+  if(avg){
+    if(type == "PC") ## PC1 is used in the principal component
+    {
+      trans <- preProcess(window_data[,3:5], method=c("BoxCox", "center", "scale", "pca"))
+      PC <- predict(trans, window_data[,3:5])
+      #plot(1:length(PC$PC1), PC$PC1, type="l")
+      window_data$avg <- PC$PC1
+    }else if(type=="mag") ## magnitude is used
+    {
+      window_data$mag <- sqrt( (window_data$x+50)^2 + (window_data$y+50)^2 + (window_data$z+50)^2)
+      window_data$avg <- window_data$mag - mean(window_data$mag)    
+    }
+  }
   
   switch(feature_type,
+         peaknumAutoSum={
+           if(avg==TRUE){
+             signal <- getAutocorrelationSignal(window_data$avg, startLag)
+             res <- c( getNumPeaksBy(signal, 0.01,0.05, "num",calType = "sum") )
+           }else{
+             signal_x <- getAutocorrelationSignal(window_data$x, startLag)
+             signal_y <- getAutocorrelationSignal(window_data$y, startLag)
+             signal_z <- getAutocorrelationSignal(window_data$z, startLag)
+             res <- c( getNumPeaksBy(signal_x, 0.01, 0.05, "num",calType = "sum") ,
+                       getNumPeaksBy(signal_y, 0.01, 0.05, "num",calType = "sum") ,
+                       getNumPeaksBy(signal_z, 0.01, 0.05, "num",calType = "sum") 
+             )
+           }
+         },
+         prominentAutoSum={
+           if(avg==TRUE){
+             signal <- getAutocorrelationSignal(window_data$avg, startLag)
+             res <- c( getNumPeaksBy(signal, 0.01, 0.1, "peaks", "prominent",calType = "sum") )
+             
+           }else{
+             signal_x <- getAutocorrelationSignal(window_data$x, startLag)
+             signal_y <- getAutocorrelationSignal(window_data$y, startLag)
+             signal_z <- getAutocorrelationSignal(window_data$z, startLag)
+             res <- c( getNumPeaksBy(signal_x, 0.01, 0.1, "peaks", "prominent",calType = "sum"), # 0.05 -> 0.1
+                       getNumPeaksBy(signal_y, 0.01, 0.1, "peaks", "prominent",calType = "sum"),
+                       getNumPeaksBy(signal_z, 0.01, 0.1, "peaks", "prominent",calType = "sum")
+             )
+           }
+         },
+         weakpeakAutoSum={
+           if(avg==TRUE){
+             signal <- getAutocorrelationSignal(window_data$avg, startLag)
+             res <- c( getNumPeaksBy(signal, 0.01, 0.1, "peaks", "weak",calType = "sum") )
+             
+           }else{
+             signal_x <- getAutocorrelationSignal(window_data$x, startLag)
+             signal_y <- getAutocorrelationSignal(window_data$y, startLag)
+             signal_z <- getAutocorrelationSignal(window_data$z, startLag)
+             res <- c( getNumPeaksBy(signal_x, 0.01, 0.1, "peaks", "weak",calType = "sum"),
+                       getNumPeaksBy(signal_y, 0.01, 0.1, "peaks", "weak",calType = "sum"),
+                       getNumPeaksBy(signal_z, 0.01, 0.1, "peaks", "weak",calType = "sum")
+             )
+           }
+         },
+         peaknumAuto={
+           if(avg==TRUE){
+             signal <- getAutocorrelationSignal(window_data$avg, startLag)
+             res <- c( getNumPeaksBy(signal, 0.01,0.05, "num") )
+           }else{
+             signal_x <- getAutocorrelationSignal(window_data$x, startLag)
+             signal_y <- getAutocorrelationSignal(window_data$y, startLag)
+             signal_z <- getAutocorrelationSignal(window_data$z, startLag)
+             res <- c( getNumPeaksBy(signal_x, 0.01, 0.05, "num") ,
+                       getNumPeaksBy(signal_y, 0.01, 0.05, "num") ,
+                       getNumPeaksBy(signal_z, 0.01, 0.05, "num") 
+                       )
+           }
+         },
+         prominentAuto={
+           if(avg==TRUE){
+             signal <- getAutocorrelationSignal(window_data$avg, startLag)
+             res <- c( getNumPeaksBy(signal, 0.01, 0.1, "peaks", "prominent") )
+             
+           }else{
+             signal_x <- getAutocorrelationSignal(window_data$x, startLag)
+             signal_y <- getAutocorrelationSignal(window_data$y, startLag)
+             signal_z <- getAutocorrelationSignal(window_data$z, startLag)
+             res <- c( getNumPeaksBy(signal_x, 0.01, 0.1, "peaks", "prominent"), # 0.05 -> 0.1
+                       getNumPeaksBy(signal_y, 0.01, 0.1, "peaks", "prominent"),
+                       getNumPeaksBy(signal_z, 0.01, 0.1, "peaks", "prominent")
+                       )
+           }
+         },
+         weakpeakAuto={
+           if(avg==TRUE){
+             signal <- getAutocorrelationSignal(window_data$avg, startLag)
+             res <- c( getNumPeaksBy(signal, 0.01, 0.1, "peaks", "weak") )
+             
+           }else{
+             signal_x <- getAutocorrelationSignal(window_data$x, startLag)
+             signal_y <- getAutocorrelationSignal(window_data$y, startLag)
+             signal_z <- getAutocorrelationSignal(window_data$z, startLag)
+             res <- c( getNumPeaksBy(signal_x, 0.01, 0.1, "peaks", "weak"),
+                       getNumPeaksBy(signal_y, 0.01, 0.1, "peaks", "weak"),
+                       getNumPeaksBy(signal_z, 0.01, 0.1, "peaks", "weak")
+                       )
+           }
+         },
+         maximumAuto={
+           if(avg==TRUE){   
+             signal <- getAutocorrelationSignal(window_data$avg, startLag)
+             res <- c( max(signal) )
+           }else{
+             signal_x <- getAutocorrelationSignal(window_data$x, startLag)
+             signal_y <- getAutocorrelationSignal(window_data$y, startLag)
+             signal_z <- getAutocorrelationSignal(window_data$z, startLag)
+             res <- c( max(signal_x), max(signal_y), max(signal_z) )
+           }
+         },
+         powerband={
+           if(avg == TRUE){
+             res <- c( getPowerBandBy(window_data$avg, powerband_from, powerband_to, sampling.rate = sampling.rate) )
+           }else {
+             res <- c( getPowerBandBy(window_data$x, powerband_from, powerband_to, sampling.rate = sampling.rate),
+                       getPowerBandBy(window_data$y, powerband_from, powerband_to, sampling.rate = sampling.rate),
+                       getPowerBandBy(window_data$z, powerband_from, powerband_to, sampling.rate = sampling.rate)
+             )
+           }
+         },
+         height1stAuto={
+           if(avg == TRUE){
+             signal <- getAutocorrelationSignal(window_data$avg, startLag)             
+             res <- c( getFirstHeightBy(signal) )
+           }else {
+             signal_x <- getAutocorrelationSignal(window_data$x, startLag)
+             signal_y <- getAutocorrelationSignal(window_data$y, startLag)
+             signal_z <- getAutocorrelationSignal(window_data$z, startLag)
+             
+             res <- c( getFirstHeightBy(signal_x), getFirstHeightBy(signal_y), getFirstHeightBy(signal_z) )
+           }
+         },
+         SD={
+           if(avg == TRUE){
+             res <- c( sd(window_data$avg) )
+           }else{
+             res <- c(sd(window_data$x),sd(window_data$y),sd(window_data$z))
+           }
+         },
+         RMS = {
+           if(avg == TRUE){
+             res <- c( sqrt(sum(window_data$avg^2)/length(window_data$avg)) )
+           }else{
+             res <- c( sqrt(sum(window_data$x^2)/length(window_data$x)), sqrt(sum(window_data$y^2)/length(window_data$y)) ,
+                       sqrt(sum(window_data$z^2)/length(window_data$z)) )
+           }
+         },
+         integratedRMS = {
+           if(avg == TRUE){
+             signal <- getIntegrateSignal(window_data$avg)
+             res <- c( sqrt(sum(signal^2)/length(signal)) )
+           }else{
+             signal_x <- getIntegrateSignal(window_data$x)
+             signal_y <- getIntegrateSignal(window_data$y)
+             signal_z <- getIntegrateSignal(window_data$z)
+             res <- c( sqrt(sum(signal_x^2)/length(signal_x)), sqrt(sum(signal_y^2)/length(signal_y)) ,
+                       sqrt(sum(signal_z^2)/length(signal_z)) )
+           }
+         },
+         energyFrom_0to10Hz = {
+           if(avg == TRUE){
+             avgV = trans_to_frequency(window_data$avg)
+             
+             n = length(window_data$x)
+             #sampling.rate = 50 
+             nUniquePts <- ceiling((n+1)/2)
+             freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
+             
+             sum <- 0
+             for(i in 1:length(freqArray))
+             {
+               if(freqArray[i]>10){
+                 #print(paste("i",i))
+                 break;
+               }
+               else
+                 sum <- sum + avgV[i]
+             }
+             
+             res <- c(sum)
+           }else{          
+             Px = trans_to_frequency(window_data$x - mean(window_data$x) )
+             Py = trans_to_frequency(window_data$y - mean(window_data$y) )
+             Pz = trans_to_frequency(window_data$z - mean(window_data$z) )
+             
+             n = length(window_data$x)
+             #sampling.rate = 50 
+             nUniquePts <- ceiling((n+1)/2)
+             freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
+             
+             sumX <- 0; sumY <- 0; sumZ <- 0;
+             for(i in 1:length(freqArray))
+             {
+               if(freqArray[i]>10){
+                 #print(paste("i",i))
+                 break;
+               }
+               else{
+                 sumX <- sumX + Px[i]; sumY <- sumY + Py[i]; sumZ <- sumZ + Pz[i];
+               }
+             }
+             res <- c(sumX, sumY, sumZ)
+           }
+         },         
+         sum_abs = {
+           if(avg == TRUE){
+             res <- c( sum(abs(window_data$avg) ))
+           }else{
+             res <- c( sum( abs(window_data$x) ), sum( abs(window_data$y) ),
+                       sum( abs(window_data$z) ) )
+           }
+         },
          threshold={
            g<- 9.81
            #plot(window_data$x, type='l')
@@ -197,11 +475,12 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
          },
          peakfreq={
            if(avg == TRUE){
-             res <- c(trans_to_frequency(window_data$avg-mean(window_data$avg),"maxfreq"))
+             res <- c(trans_to_frequency(window_data$avg,"maxfreq"))
            }else{
-             res <- c(trans_to_frequency(window_data$x-mean(window_data$x),"maxfreq"), trans_to_frequency(window_data$y-mean(window_data$y),"maxfreq"), trans_to_frequency(window_data$z-mean(window_data$z),"maxfreq"))
+             res <- c(trans_to_frequency(window_data$x,"maxfreq"), trans_to_frequency(window_data$y,"maxfreq"), trans_to_frequency(window_data$z,"maxfreq"))
            }
          },
+         
          gyrowfeature={
            window_data$sx = predict(smooth.spline(window_data$time, window_data$x, spar = 0.3), window_data$time)$y
            window_data$sy = predict(smooth.spline(window_data$time, window_data$y, spar = 0.3), window_data$time)$y
@@ -247,7 +526,7 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
            #View(window_data)
            
            if(avg==TRUE){
-             Px = trans_to_frequency(window_data$avg - mean(window_data$avg))       
+             Px = trans_to_frequency(window_data$avg)       
              n = length(window_data$x)
              sampling.rate = 50 
              nUniquePts <- ceiling((n+1)/2)
@@ -257,9 +536,9 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
              
              res <- c( getPeakRatioFeature(df$perX,df$fre, 0.005,1,FALSE) )
            }else{
-             Px = trans_to_frequency(window_data$x - mean(window_data$x))
-             Py = trans_to_frequency(window_data$y - mean(window_data$y))
-             Pz = trans_to_frequency(window_data$z - mean(window_data$z))
+             Px = trans_to_frequency(window_data$x )
+             Py = trans_to_frequency(window_data$y )
+             Pz = trans_to_frequency(window_data$z )
              
              n = length(window_data$x)
              sampling.rate = 50 
@@ -311,6 +590,13 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
              res <- c(min(window_data$avg))
            }else
              res <- c(min(window_data$x),min(window_data$y),min(window_data$z))
+         }
+         ,mintomax={
+           if(avg == TRUE){
+             res <- c( abs(max(window_data$avg)-min(window_data$avg)) )
+           }else
+             res <- c( abs(max(window_data$x)-min(window_data$x)), abs(max(window_data$y)-min(window_data$y)),
+                       abs(max(window_data$z)-min(window_data$z)) )
          },
          variance={
            if(avg == TRUE){

@@ -1,3 +1,10 @@
+scratching_real <- c("scratching_data0521(1_57_38)", TRUE, 888, 0,
+                     "scratching_data0521(3_14_16)", TRUE, 888, 0,
+                     "scratching_data0521(3_15_58)", TRUE, 888, 0,
+                     "scratching_data0521(3_42_22)", TRUE, 888, 0,
+                     "scratching_data0521(3_55_20)", TRUE, 888, 0,
+                     "scratching_data0521(4_21_17)", TRUE, 888, 0)
+
 
 scratching_real <- c("scratching_data0521(1_57_38)", FALSE, 0, 0,
                      "scratching_data0521(3_14_16)", FALSE, 0, 0,
@@ -5,6 +12,7 @@ scratching_real <- c("scratching_data0521(1_57_38)", FALSE, 0, 0,
                      "scratching_data0521(3_42_22)", FALSE, 0, 0,
                      "scratching_data0521(3_55_20)", FALSE, 0, 0,
                      "scratching_data0521(4_21_17)", FALSE, 0, 0)
+
 
 selected <- ar_temp[selected_indexs]
 data<-as.data.frame(selected)
@@ -32,6 +40,12 @@ scratch_data_list <- c(
   "scratching_data0521(2_07_47)",FALSE, 0, 0,
   "scratching_data0521(2_12_43)",FALSE, 0, 0
 )
+
+scratch_data_list<-scratching_real
+
+scratch_data_list <- c(
+  "subject1_1", FALSE, 0,0
+  )
 
 for(i in 0:((length(scratch_data_list)/4)-1))
 {

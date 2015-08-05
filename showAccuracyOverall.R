@@ -4,25 +4,29 @@
 sum_data$p[c(1:length(sum_data$label))] <-  0
 sum_data$scrtype[c(1:length(sum_data$label))] <-  0
 
+
 scr_data <- scr_data0703
 non_scr_data <- nonscr_data
 f_indexces <- c(1,49,50,51,82,83,84,88,111,112,113,123,124,125)
 ML_method <- "J48"
 
+acc<-showAccuracy(scr_data0704, nonscr, c(1,49,50,51,82,83,84,88,111,112,113,123,124,125), "J48")
+
+acc_rw<-showAccuracy(scr_data0704, non_scr_data, c(1,138,139,141,142), "J48")
 
 
 showAccuracy <- function (scr_data, non_scr_data, f_indexces, ML_method)
 {
   np <- length(levels(factor(scr_data$p)))
-  non_scr_data$p <- 0
-  non_scr_data$scrtype <- 0
+  #non_scr_data$p <- 0
+  #non_scr_data$scrtype <- 0
   accuracy <- list()
   
   for(testP in 1:np)
   {
     # Step 1 : making Model
     scr_data_train <- subset(scr_data, subset=(scr_data$p != testP ))
-    #    print(scr_data_train$p)
+    #print(scr_data_train$p)
     data <- rbind(non_scr_data, scr_data_train)
     sum_data<-data
     selected <- sum_data[f_indexces]

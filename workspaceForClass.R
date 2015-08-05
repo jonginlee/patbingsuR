@@ -43,9 +43,9 @@ getMotionFromRanges <- function(foldername, filename, ranglist, idx)
     data.sub <- subset(data.sub,grepl(list[idx], data.sub$type))
     window_data <- as.data.frame(data.sub)
     
-    tmp_x<-createIntegralGraph(window_data$time, window_data$x,paste("x-axis",start_milli,"~",end_milli),type = "loc")
-    tmp_y<-createIntegralGraph(window_data$time, window_data$y,paste("y-axis",start_milli,"~",end_milli),type = "loc")
-    tmp_z<-createIntegralGraph(window_data$time, window_data$z,paste("z-axis",start_milli,"~",end_milli),type = "loc")      
+    tmp_x<-createIntegralGraph(window_data$time, window_data$x,paste("x-axis"),type = "vel",plotting = TRUE)
+    tmp_y<-createIntegralGraph(window_data$time, window_data$y,paste("y-axis"),type = "vel",plotting = TRUE)
+    tmp_z<-createIntegralGraph(window_data$time, window_data$z,paste("z-axis"),type = "vel",plotting = TRUE)      
     
     dis <- sqrt(tmp_x[length(tmp_x)]^2 + tmp_y[length(tmp_y)]^2 + tmp_z[length(tmp_z)]^2)
     print(paste("x:",tmp_x[length(tmp_x)],"y:",tmp_y[length(tmp_y)],"z:",tmp_z[length(tmp_z)], "dis",sum(dis) ))
@@ -69,6 +69,85 @@ getMotionFromRanges <- function(foldername, filename, ranglist, idx)
 
 resdata<-getFeaturesFromRanges("jonginlee_data0623", "data_watch_intentservice1", ranglist1, 8)
 
+
+createIntegralGraph<-function(x,y,graph_title,type="vel",plotting=FALSE)
+{
+  if(type=="vel")
+  {
+    new_y <- 0
+    for(i in 1:length(y)){
+      sum <- 0
+      for(j in 1:i){
+        sum <- sum + round(y[j],digits=2)
+      }
+      new_y[i] <- sum
+    }
+
+    ylabel <- "Velocity (m/s)"
+    
+    
+    #View(new_y)
+    #if( new_y[length(y)] != 0)
+    #  print(paste("b new_y",new_y[length(y)]))
+    
+    offset <- new_y[length(y)]
+    #print(paste("offset ",offset,"length(y)",length(y),"offset/length(y)",offset/length(y)))
+    
+    toffset <-  offset/length(y) 
+    for(i in 1:length(y)){
+#      if(new_y[i] < 0)
+        new_y[i] <- new_y[i] - i*toffset
+#      else if(new_y[i] > 0)
+#        new_y[i] <- new_y[i] - toffset
+    }
+   
+    #print(paste("a new_y",new_y[length(y)]))
+
+    res<-new_y
+    
+  }else if(type=="loc")
+  {
+    new_y <- 0
+    for(i in 1:length(y)){
+      sum <- 0
+      for(j in 1:i){
+        sum <- sum + round(y[j],digits=2)
+      }
+      new_y[i] <- sum
+    }
+    
+    offset <- new_y[length(y)]
+    toffset <-  offset/length(y) 
+    for(i in 1:length(y)){
+      new_y[i] <- new_y[i] - i*toffset
+    }
+    
+
+    
+    new_yy <- 0
+    for(i in 1:length(new_y)){
+      sum <- 0
+      for(j in 1:i){
+        sum <- sum + round(new_y[j],digits=2)
+      }
+      new_yy[i] <- sum
+    }
+    res<-new_yy
+    ylabel <- "distance (m/s^2)"
+  }
+  
+  
+  if(plotting){
+    returnValue <- qplot(x,res, geom=c("line","point") ) + ggtitle(paste(graph_title," - (",sensor_name_list[idx],")")) + 
+      ylab(ylabel) +
+      xlab("time") +  theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"))
+    
+    print(returnValue)
+  }
+  
+  return (res)
+}
 
 nonlist<- c(
   "scratching_data0521(2_45_02)",
@@ -129,13 +208,13 @@ filelist <- c(
 )
 
 filelist <- c(
-  "data5",
-  "data6"
+  "data1",
+  "data2"
 )
 
 
 py <- plotly("jjonginlee", "1ff4u64c19")
-uploadIntoPlotly("jonginlee_data0623", filelist, 1)
+uploadIntoPlotly("jonginlee_data0623", filelist, 3)
 
 uploadIntoPlotly <- function(foldername, filelist, idx)
 {
@@ -148,6 +227,14 @@ uploadIntoPlotly <- function(foldername, filelist, idx)
     py$ggplotly(res, session="knitr")
   }
 
+}
+
+py <- plotly("jjonginlee", "1ff4u64c19")
+uploadIntoPlotly("jonginlee_data0623", filelist, 3)
+uploadPlotlyWith<- function(data, title, idx, set_btw = FALSE, startMilli = 0.1, endMilli = 0.1)
+{
+    res<-createPlot(data, idx, paste(title) ,saveFile = FALSE,start_hour = startMilli, end_hour = endMilli)
+    py$ggplotly(res, session="knitr")
 }
 
 
@@ -200,4 +287,5 @@ x = c(5,
       6,
       5,
       7)
+
 t.test(x, alternative="greater", mu=4)

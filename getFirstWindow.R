@@ -2,6 +2,20 @@
 # getFirstWindow(data_watch_jongin0524DATASET5, 8, 20, 50, TRUE, "test", 0.05, FALSE)
 # getFirstWindow(data_watch_jongin0524DATASET1, 8, 25, 50, TRUE, "test", 0.03, FALSE)
 
+data<-ji_loc_test
+data.sub <- subset(data,grepl(list[8], data$type))
+
+window_data <- data.sub
+tmp_x<-createIntegralGraph(window_data$time, window_data$x,paste("x-axis"),type = "loc")
+tmp_y<-createIntegralGraph(window_data$time, window_data$y,paste("y-axis"),type = "loc")
+tmp_z<-createIntegralGraph(window_data$time, window_data$z,paste("z-axis"),type = "loc")      
+
+dis <- sqrt(tmp_x[length(tmp_x)]^2 + tmp_y[length(tmp_y)]^2 + tmp_z[length(tmp_z)]^2)
+print(paste("x:",tmp_x[length(tmp_x)],"y:",tmp_y[length(tmp_y)],"z:",tmp_z[length(tmp_z)], "dis",sum(dis) ))
+
+scatterplot3d(tmp_x,tmp_y,tmp_z, pch=16, highlight.3d=TRUE,type="h", main="distance")
+
+
 filelist <- c(
   "data_watch_jongin0524DATASET1", 
   "data_watch_jongin0524DATASET2",

@@ -1,4 +1,6 @@
 
+
+
 list = c("Accel","Magnet","Gyro","Hum","Temp","Press","orientation","Linearaccel","HeartRate")
 sensor_name_list = c("Accelerometer","Magnetometer", "Gyroscope", "Humidity", "Temperature", "Pressure","Orientation(x-azimuth,y-pitch,z-roll)","Linear Accelerometer" ,"Heart Rate")
 y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity (rad/s)", "relative humidity (RH)","celsius degrees (°C)", "hectopascal (hPa)", "rotation round", "acceleration (m/s^2)", "beats per minute (bpm)")
@@ -76,6 +78,7 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
     if(cutoff){
       bf2 <- butter(1, (2*f_l)/(50), type=butter_type)
       df$x <- filtfilt(bf2,df$x)
+      
       bf2 <- butter(1, (2*f_l)/(50), type=butter_type)
       df$y <- filtfilt(bf2,df$y)
       bf2 <- butter(1, (2*f_l)/(50), type=butter_type)

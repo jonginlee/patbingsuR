@@ -75,6 +75,7 @@ getDataset2 <- function(scr_filelist, non_scratch_file,idx, window_size, window_
 doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, save_filename, plotting = FALSE, type = 1, delay=1, startMilli=2000, endMilli=2000, thresholdvar = 0.1)
 {
   data.mag <- subset(data,grepl(list[8],data$type))
+  data.gyro <- subset(data,grepl(list[3], data$type))
   data.sub <- subset(data,grepl(list[idx], data$type))
   data.sub$hour <- data.sub$time/(1000*60*60)
   
@@ -84,7 +85,6 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
   #    data.sub$y <- data.sub$y - mean(data.sub$y)
   #    data.sub$z <- data.sub$z - mean(data.sub$z)
   #  }
-  
   #  data.sub <- subset(data.sub, subset=(data.sub$time > 2000 ))
   
   #data.sub <- getDelayedData(data.sub, delay)
@@ -143,21 +143,15 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
   }
   
   # Window setting
-  #print(paste("window_num : ",window_num, " nrow(data.sub) : ", nrow(data.sub), " window_step ", window_step))
-  
-#  window_num <- as.integer(nrow(data.sub)/window_step)
+
   window_idx <- 1
-  #  window_set <- vector(mode="list", length=(31 - 12) ) # extended previous 2
-  #  window_set <- vector(mode="list", length=(31) ) # extended previous & CHI
-  #  window_set <- vector(mode="list", length=(31+4) ) # all
-  #  window_set <- vector(mode="list", length=(19+6) ) # selected
-  # window_set <- vector(mode="list", length=(19+6) ) # selected + 1
-  window_set <- vector(mode="list", length=(4 + 3*12 + 11) ) # selected + 1
+  window_set <- vector(mode="list", length=(4 + 3*(15+16) + (14+16) + (14+16) ) ) # 
   
   sname <- list[idx]
-  #window_set <- vector(mode="list", length=(31 - 8) ) # previous work
+
   names(window_set) <- c(
-                            "epoches","start_milli","end_milli","label",
+                         "epoches","start_milli","end_milli","label",
+                        
                          paste(sname,"_mean_x",sep=""),paste(sname,"_mean_y",sep=""), paste(sname,"_mean_z", sep=""),
                          paste(sname,"_max_x",sep=""), paste(sname,"_max_y",sep=""),paste(sname,"_max_z",sep=""),
                          paste(sname,"_min_x",sep=""), paste(sname,"_min_y",sep=""),paste(sname,"_min_z",sep=""),
@@ -168,30 +162,99 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
                          paste(sname,"_th_x",sep=""),paste(sname,"_th_y",sep=""),paste(sname,"_th_z",sep=""),
                          paste(sname,"_autocor2_x",sep=""),paste(sname,"_autocor2_y",sep=""),paste(sname,"_autocor2_z",sep=""),
                          paste(sname,"_autocorV2_x",sep=""),paste(sname,"_autocorV2_y",sep=""),paste(sname,"_autocorV2_z",sep=""),
-                         
-                         paste(sname,"_var_x",sep=""),paste(sname,"_var_y",sep=""),paste(sname,"_var_z",sep=""),
+                         paste(sname,"_var_x",sep=""),paste(sname,"_var_y",sep=""),paste(sname,"_var_z",sep=""),  
                          paste(sname,"_peakfreq_x",sep=""),paste(sname,"_peakfreq_y",sep=""),paste(sname,"_peakfreq_z",sep=""),
+                         paste(sname,"_energyFrom_0to10Hz_x",sep=""),paste(sname,"_energyFrom_0to10Hz_y",sep=""),paste(sname,"_energyFrom_0to10Hz_z",sep=""),
+                         paste(sname,"_RMS_x",sep=""),paste(sname,"_RMS_y",sep=""),paste(sname,"_RMS_z",sep=""),   
+                         paste(sname,"_SD_x",sep=""),paste(sname,"_SD_y",sep=""),paste(sname,"_SD_z",sep=""),
+                         
+                         paste(sname,"_integrated_RMS_x",sep=""),paste(sname,"_integrated_RMS_y",sep=""),paste(sname,"_integrated_RMS_z",sep=""),
+                         paste(sname,"_numPeak_x",sep=""),paste(sname,"_numPeak_y",sep=""),paste(sname,"_numPeak_z",sep=""),
+                         paste(sname,"_promientPeak_x",sep=""),paste(sname,"_promientPeak_y",sep=""),paste(sname,"_promientPeak_z",sep=""),
+                         paste(sname,"_weakPeak_x",sep=""),paste(sname,"_weakPeak_y",sep=""),paste(sname,"_weakPeak_z",sep=""),
+                         paste(sname,"_maxAuto_x",sep=""),paste(sname,"_maxAuto_y",sep=""),paste(sname,"_maxAuto_z",sep=""),
+                         paste(sname,"_height1stAuto_x",sep=""),paste(sname,"_height1stAuto_y",sep=""),paste(sname,"_height1stAuto_z",sep=""),
+                         paste(sname,"_powerBand0_2.5x",sep=""),paste(sname,"_powerBand0_2.5_y",sep=""),paste(sname,"_powerBand0_2.5_z",sep=""),
+                         paste(sname,"_powerBand2.5_5x",sep=""),paste(sname,"_powerBand2.5_5_y",sep=""),paste(sname,"_powerBand2.5_5_z",sep=""),
+                         paste(sname,"_powerBand5_7.5x",sep=""),paste(sname,"_powerBand5_7.5_y",sep=""),paste(sname,"_powerBand5_7.5_z",sep=""),
+                         paste(sname,"_powerBand7.5_10x",sep=""),paste(sname,"_powerBand7.5_10_y",sep=""),paste(sname,"_powerBand7.5_10_z",sep=""),
+                         paste(sname,"_powerBand10_12.5x",sep=""),paste(sname,"_powerBand10_12.5_y",sep=""),paste(sname,"_powerBand10_12.5_z",sep=""),
+                         paste(sname,"_powerBand12.5_15x",sep=""),paste(sname,"_powerBand12.5_15_y",sep=""),paste(sname,"_powerBand12.5_15_z",sep=""),
+                         paste(sname,"_powerBand15_17.5x",sep=""),paste(sname,"_powerBand15_17.5_y",sep=""),paste(sname,"_powerBand15_17.5_z",sep=""),
+                         paste(sname,"_powerBand17.5_20x",sep=""),paste(sname,"_powerBand17.5_20_y",sep=""),paste(sname,"_powerBand17.5_20_z",sep=""),
+                         paste(sname,"_powerBand20_22.5x",sep=""),paste(sname,"_powerBand20_22.5_y",sep=""),paste(sname,"_powerBand20_22.5_z",sep=""),
+                         paste(sname,"_powerBand22.5_25x",sep=""),paste(sname,"_powerBand22.5_25_y",sep=""),paste(sname,"_powerBand22.5_25_z",sep=""),
+                         
+                         
+                         #
                          paste(sname,"_mean_avg",sep=""),
                          paste(sname,"_max_avg",sep=""),
                          paste(sname,"_min_avg",sep=""),
                          paste(sname,"_entropy_avg",sep=""),
                          paste(sname,"_energy_avg",sep=""),
-                         paste(sname,"_autocor1_avg",sep=""),
-                         
+                         paste(sname,"_autocor1_avg",sep=""), 
                          paste(sname,"_th_avg",sep=""),
                          paste(sname,"_autocor2_avg",sep=""),
-                         paste(sname,"_autocorV2_avg",sep=""),
-                         
+                         paste(sname,"_autocorV2_avg",sep=""),                    
                          paste(sname,"_var_avg",sep=""),
-                         paste(sname,"_peakfreq_avg",sep="")
+                         paste(sname,"_peakfreq_avg",sep=""),
+                         paste(sname,"_energyFrom_0to10Hz_avg",sep=""),
+                         paste(sname,"_RMS_avg",sep=""),
+                         paste(sname,"_SD_avg",sep=""),
+                         
+                         paste(sname,"_integrated_RMS_avg",sep=""),
+                         paste(sname,"_numPeak_avg",sep=""),
+                         paste(sname,"_promientPeak_avg",sep=""),
+                         paste(sname,"_weakPeak_avg",sep=""),
+                         paste(sname,"_maxAuto_avg",sep=""),
+                         paste(sname,"_height1stAuto_avg",sep=""),
+                         paste(sname,"_powerBand0_2.5avg",sep=""),
+                         paste(sname,"_powerBand2.5_5avg",sep=""),
+                         paste(sname,"_powerBand5_7.5avg",sep=""),
+                         paste(sname,"_powerBand7.5_10avg",sep=""),
+                         paste(sname,"_powerBand10_12.5avg",sep=""),
+                         paste(sname,"_powerBand12.5_15avg",sep=""),
+                         paste(sname,"_powerBand15_17.5avg",sep=""),
+                         paste(sname,"_powerBand17.5_20avg",sep=""),
+                         paste(sname,"_powerBand20_22.5avg",sep=""),
+                         paste(sname,"_powerBand22.5_25avg",sep=""),
+                         
+                         #
+                         paste(sname,"_mean_avg(PC)",sep=""),
+                         paste(sname,"_max_avg(PC)",sep=""),
+                         paste(sname,"_min_avg(PC)",sep=""),
+                         paste(sname,"_entropy_avg(PC)",sep=""),
+                         paste(sname,"_energy_avg(PC)",sep=""),
+                         paste(sname,"_autocor1_avg(lag12PC)",sep=""),                         
+                         paste(sname,"_th_avg(PC)",sep=""),
+                         paste(sname,"_autocor2_avg(lag1PC)",sep=""),
+                         paste(sname,"_autocorV2_avg(PC)",sep=""),                        
+                         paste(sname,"_var_avg(PC)",sep=""),
+                         paste(sname,"_peakfreq_avg(PC)",sep=""),
+                         paste(sname,"_energyFrom_0to10Hz_avg(PC)",sep=""),
+                         paste(sname,"_RMS_avg(PC)",sep=""),
+                         paste(sname,"_SD_avg(PC)",sep=""),
+                         
+                         paste(sname,"_integrated_RMS_avg(PC)",sep=""),
+                         paste(sname,"_numPeak_avg(PC)",sep=""),
+                         paste(sname,"_promientPeak_avg(PC)",sep=""),
+                         paste(sname,"_weakPeak_avg(PC)",sep=""),
+                         paste(sname,"_maxAuto_avg(PC)",sep=""),
+                         paste(sname,"_height1stAuto_avg(PC)",sep=""),
+                         paste(sname,"_powerBand0_2.5avg(PC)",sep=""),
+                         paste(sname,"_powerBand2.5_5avg(PC)",sep=""),
+                         paste(sname,"_powerBand5_7.5avg(PC)",sep=""),
+                         paste(sname,"_powerBand7.5_10avg(PC)",sep=""),
+                         paste(sname,"_powerBand10_12.5avg(PC)",sep=""),
+                         paste(sname,"_powerBand12.5_15avg(PC)",sep=""),
+                         paste(sname,"_powerBand15_17.5avg(PC)",sep=""),
+                         paste(sname,"_powerBand17.5_20avg(PC)",sep=""),
+                         paste(sname,"_powerBand20_22.5avg(PC)",sep=""),
+                         paste(sname,"_powerBand22.5_25avg(PC)",sep="")
                          )
   
   candidates_idx <- 1
-  # p1  3.58333+0.013888
-  # p2  2.267 + 0.0219448 -0.0061112 - 0.02138888 + 0.02194444 -0.0011111 +0.0000277777 left
-  # p2  2.267 + 0.0219448 -0.0061112 - 0.02138888 right\
-  # recent 2.267 + 0.0219448 -0.0061112 - 0.02138888 +2.6 + 0.004166
-  # recent 2.267 + 0.0219448 -0.0061112-0.02138888 +2.6 + 0.004166
+
   print(paste("window_num : ",window_num))
   
   for(i in 1:window_num)
@@ -204,44 +267,127 @@ doSimulationAllFeatures <- function(data, cut, idx, window_size, window_step, sa
                             z=window_data$z, saxis=(window_data$x+window_data$y+window_data$z))
     start_milli <-paste( getHMS(window_data$hour[1]), window_data$time[1] )
     end_milli <- paste( getHMS(window_data$hour[nrow(window_data)]), window_data$time[nrow(window_data)] )
+    #print(paste("var(magnitude)",var(magnitude)))
     if(var(magnitude)>thresholdvar){
+      #print("var(magnitude)>thresholdvar")
       epoch<-1
       label<-"TODO"
       rect <- data.frame(xmin=data.sub$time[window_idx], xmax=data.sub$time[window_idx+nrow(window_data)-2], ymin=-Inf, ymax=Inf)
       returnValue <- returnValue + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill="blue", inherit.aes = FALSE)        
+      
+      p <- c(epoch,start_milli,end_milli,label,
+             getFeatureBy(window_df,"mean"),
+             getFeatureBy(window_df,"max"),
+             getFeatureBy(window_df,"min"),
+             getFeatureBy(window_df,"entropy"),   
+             getFeatureBy(window_df,"energy"),
+             getFeatureBy(window_df,"correlation"),
+             getFeatureBy(window_df,"autocorrelation",12),
+             getFeatureBy(window_df,"threshold"),
+             getFeatureBy(window_df,"autocorrelation", 1),
+             #getFeatureBy(window_df,"autocorrelationV2"),
+             0,0,0,
+             getFeatureBy(window_df,"variance"),
+             getFeatureBy(window_df,"peakfreq"),
+             getFeatureBy(window_df,"energyFrom_0to10Hz"),
+             getFeatureBy(window_df,"RMS"),
+             getFeatureBy(window_df,"SD"),
+             getFeatureBy(window_df,"integratedRMS"),
+             getFeatureBy(window_df,"peaknumAuto"),
+             getFeatureBy(window_df,"prominentAuto"),
+             getFeatureBy(window_df,"weakpeakAuto"),
+             getFeatureBy(window_df,"maximumAuto"),
+             getFeatureBy(window_df,"height1stAuto"),
+             
+             getFeatureBy(window_df,"powerband",powerband_from = 0,powerband_to = 2.5),
+             getFeatureBy(window_df,"powerband",powerband_from = 2.5,powerband_to = 5),
+             getFeatureBy(window_df,"powerband",powerband_from = 5,powerband_to = 7.5),
+             getFeatureBy(window_df,"powerband",powerband_from = 7.5,powerband_to = 10),
+             getFeatureBy(window_df,"powerband",powerband_from = 10,powerband_to = 12.5),
+             getFeatureBy(window_df,"powerband",powerband_from = 12.5,powerband_to = 15),
+             getFeatureBy(window_df,"powerband",powerband_from = 15,powerband_to = 17.5),
+             getFeatureBy(window_df,"powerband",powerband_from = 17.5,powerband_to = 20),
+             getFeatureBy(window_df,"powerband",powerband_from = 20,powerband_to = 22.5),
+             getFeatureBy(window_df,"powerband",powerband_from = 22.5,powerband_to = 25),
+             
+             ##           
+             getFeatureBy(window_df,"mean",avg=TRUE),
+             getFeatureBy(window_df,"max",avg=TRUE),
+             getFeatureBy(window_df,"min",avg=TRUE),
+             getFeatureBy(window_df,"entropy",avg=TRUE),   
+             getFeatureBy(window_df,"energy",avg=TRUE),
+             getFeatureBy(window_df,"autocorrelation",12,avg=TRUE),
+             getFeatureBy(window_df,"threshold",avg=TRUE),
+             getFeatureBy(window_df,"autocorrelation", 1,avg=TRUE),
+             #getFeatureBy(window_df,"autocorrelationV2",avg=TRUE),
+             0,           
+             getFeatureBy(window_df,"variance",avg=TRUE),
+             getFeatureBy(window_df,"peakfreq",avg=TRUE),
+             getFeatureBy(window_df,"energyFrom_0to10Hz",avg=TRUE),
+             getFeatureBy(window_df,"RMS",avg=TRUE),
+             getFeatureBy(window_df,"SD",avg=TRUE), 
+             getFeatureBy(window_df,"integratedRMS",avg=TRUE),
+             getFeatureBy(window_df,"peaknumAuto",avg=TRUE),
+             getFeatureBy(window_df,"prominentAuto",avg=TRUE),
+             getFeatureBy(window_df,"weakpeakAuto",avg=TRUE),
+             getFeatureBy(window_df,"maximumAuto",avg=TRUE),
+             getFeatureBy(window_df,"height1stAuto",avg=TRUE),
+             
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 0,powerband_to = 2.5),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 2.5,powerband_to = 5),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 5,powerband_to = 7.5),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 7.5,powerband_to = 10),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 10,powerband_to = 12.5),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 12.5,powerband_to = 15),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 15,powerband_to = 17.5),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 17.5,powerband_to = 20),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 20,powerband_to = 22.5),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 22.5,powerband_to = 25),
+             
+             ##
+             getFeatureBy(window_df,"mean",avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"max",avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"min",avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"entropy",avg=TRUE,type="PC"),   
+             getFeatureBy(window_df,"energy",avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"autocorrelation",12,avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"threshold",avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"autocorrelation", 1,avg=TRUE,type="PC"),
+             #getFeatureBy(window_df,"autocorrelationV2",avg=TRUE),
+             0,           
+             getFeatureBy(window_df,"variance",avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"peakfreq",avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"energyFrom_0to10Hz",avg=TRUE,type="PC"),
+             getFeatureBy(window_df,"RMS",avg=TRUE, type="PC"),
+             getFeatureBy(window_df,"SD",avg=TRUE, type="PC"),
+             getFeatureBy(window_df,"integratedRMS",avg=TRUE, type="PC"),
+             getFeatureBy(window_df,"peaknumAuto",avg=TRUE, type="PC"),
+             getFeatureBy(window_df,"prominentAuto",avg=TRUE, type="PC"),
+             getFeatureBy(window_df,"weakpeakAuto",avg=TRUE, type="PC"),
+             getFeatureBy(window_df,"maximumAuto",avg=TRUE, type="PC"),
+             getFeatureBy(window_df,"height1stAuto",avg=TRUE, type="PC"),
+             
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 0,powerband_to = 2.5, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 2.5,powerband_to = 5, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 5,powerband_to = 7.5, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 7.5,powerband_to = 10, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 10,powerband_to = 12.5, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 12.5,powerband_to = 15, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 15,powerband_to = 17.5, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 17.5,powerband_to = 20, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 20,powerband_to = 22.5, type="PC"),
+             getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 22.5,powerband_to = 25, type="PC")
+             
+      )
+      
+      window_set<-rbind(window_set,p) 
       
     }else{
       epoch<-0
       label<-"sleep"
     }
     
-    p <- c(epoch,start_milli,end_milli,label,
-           getFeatureBy(window_df,"mean"),
-           getFeatureBy(window_df,"max"),
-           getFeatureBy(window_df,"min"),
-           getFeatureBy(window_df,"entropy"),   
-           getFeatureBy(window_df,"energy"),
-           getFeatureBy(window_df,"correlation"),
-           getFeatureBy(window_df,"autocorrelation",12),
-           getFeatureBy(window_df,"threshold"),
-           getFeatureBy(window_df,"autocorrelation", 1),
-           getFeatureBy(window_df,"autocorrelationV2"),
-           getFeatureBy(window_df,"variance"),
-           getFeatureBy(window_df,"peakfreq"),
-           getFeatureBy(window_df,"mean",avg=TRUE),
-           getFeatureBy(window_df,"max",avg=TRUE),
-           getFeatureBy(window_df,"min",avg=TRUE),
-           getFeatureBy(window_df,"entropy",avg=TRUE),   
-           getFeatureBy(window_df,"energy",avg=TRUE),
-           getFeatureBy(window_df,"autocorrelation",12,avg=TRUE),
-           getFeatureBy(window_df,"threshold",avg=TRUE),
-           getFeatureBy(window_df,"autocorrelation", 1,avg=TRUE),
-           getFeatureBy(window_df,"autocorrelationV2",avg=TRUE),           
-           getFeatureBy(window_df,"variance",avg=TRUE),
-           getFeatureBy(window_df,"peakfreq",avg=TRUE)   
-    )
-    
-    window_set<-rbind(window_set,p) 
+
     window_idx <- window_idx + window_step
   }
   
