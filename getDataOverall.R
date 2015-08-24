@@ -109,7 +109,6 @@ folderlist <- c("junhong_data0623")
 
 
 folderlist <- c(
-  "chang",
   "jonginlee_data0623",
   "junhong_data0623",
   "soku",
@@ -119,10 +118,10 @@ folderlist <- c(
   "chul"
 )
 
+ranglist <- read.csv("dataset_2.csv")
 
-ranglist <- read.csv("dataset.csv")
 
-
+length(ranglist$mv_start)
 
 #ranglist <-  lapply(ranglist, as.numeric)
 
@@ -133,9 +132,12 @@ sim_scr_data0805[c(2:length(sim_scr_data0805))] <-  lapply((sim_scr_data0805[c(2
 sim_nonscr_data0805 <- sum_data
 View(sum_data[5:6])
 
-sim_scr_data0803 <- data
-sim_scr_data0803[c(2:length(sim_scr_data0803))] <-  lapply((sim_scr_data0803[c(2:length(sim_scr_data0803))]), as.numeric)
-sim_nonscr_data0803 <- sum_data
+
+
+saveFairTrainData(sim_scr_data0805, sim_nonscr_data0805[5:length(sim_nonscr_data0805)], "sim_data0805")
+
+saveFairTrainData(sim_scr_data0805, sim_nonscr_data0805[5:length(sim_nonscr_data0805)], "sim_data0805")
+
 
 saveFairTrainData<-function(scr_data, nonscr_data, savefile)
 {
@@ -154,6 +156,11 @@ saveFairTrainData<-function(scr_data, nonscr_data, savefile)
   write.arff(fair_data, file=paste("./data_csv/",savefile,".arff",sep=""), relation = savefile)
 }
 
+sim_scr_data0803 <- data
+sim_scr_data0803[c(2:length(sim_scr_data0803))] <-  lapply((sim_scr_data0803[c(2:length(sim_scr_data0803))]), as.numeric)
+
+sim_nonscr_data0806 <- sum_data
+sim_scr_data0806 <- data
 
 sim_scr_data0803.sub <-sim_scr_data0803[sample(length(sim_scr_data0803$label), length(sim_nonscr_data0803$label)), ]
 sim_scr_data0803.sub$scrtype <- NULL
@@ -190,8 +197,7 @@ write.arff(sim_nonscr_scr_data0803_sub_fair, file=paste("./data_csv/sim_nonscr_s
 getDataN <- function(folderlist,ranglist)
 {
   windata <- list()
-  fn_index <- 0
-  
+  fn_index <- 0 
   for(k in 0:(as.integer(length(ranglist$mv_start)/7)-1))
   {
     rangitem <- ranglist[c((7*k+1):(7*k+7) ),]
@@ -211,8 +217,7 @@ getDataN <- function(folderlist,ranglist)
       windata <- win1
     else{
       windata <- rbind(windata,win1)
-    }
-    
+    }    
   }
   
   View(windata)
@@ -249,7 +254,7 @@ getFeaturesFromRanges <- function(foldername, filename, ranglist, sensor_indexes
     {
       print(paste("sensor ",list[k],"=======>" ))
       idx <- k
-      win<-doSimulationAllFeatures(data.sub, FALSE, idx, 150, 50, FALSE, plotting = TRUE, thresholdvar = 0.01 )
+      win<-doSimulationAllFeatures( data.sub, FALSE, idx, 150, 50, FALSE, plotting = TRUE, thresholdvar = 0.01 ,doFineWindow = FALSE)
       row.names(win) <- NULL
       win <- as.data.frame(win)
       print(paste("win len", length(win)))
@@ -260,7 +265,7 @@ getFeaturesFromRanges <- function(foldername, filename, ranglist, sensor_indexes
         sum_data <- cbind(sum_data,win[,5:length(win)])
       }
       
-      print(paste("index : ",k, "len : ",nrow(win)))    
+      print(paste("index : ",k, "len : ",nrow(win)))  
     }
     
     #win<-doSimulationAllFeatures(data.sub, FALSE, idx, 150, 50, FALSE, plotting = TRUE, thresholdvar = 0.01 )
@@ -307,33 +312,105 @@ tt<- getDataset2(NULL, c(
 ),i, 150, 50, FALSE, NULL)
 
 
-getNonscratch<-function(filelist)
 
-  
-for(i in c(1,3,8))
+turnoverdata <- c(
+  "non_scratch/jongin_ns1R_turnover",FALSE,0,0,
+  "non_scratch/jongin_ns1L_turnover",FALSE,0,0,
+  "non_scratch/eunji_ns1R_turnover",FALSE,0,0,
+  "non_scratch/eunji_ns1L_turnover",FALSE,0,0,
+  "non_scratch/junhong_ns1R_turnover",FALSE,0,0,
+  "non_scratch/junhong_ns1L_turnover",FALSE,0,0
+)
+
+pullblankdata <- c(
+  "non_scratch/jongin_ns1R_pullblank",FALSE,0,0,
+  "non_scratch/jongin_ns1L_pullblank",FALSE,0,0,
+  "non_scratch/eunji_ns1R_pullblank",FALSE,0,0,
+  "non_scratch/eunji_ns1L_pullblank",FALSE,0,0,
+  "non_scratch/junhong_ns1R_pullblank",FALSE,0,0,
+  "non_scratch/junhong_ns1L_pullblank",FALSE,0,0
+)
+
+stretchdata <- c(
+  "non_scratch/jongin_ns1R_stretch",FALSE,0,0,
+  "non_scratch/jongin_ns1L_stretch",FALSE,0,0,
+  "non_scratch/eunji_ns1R_stretch",FALSE,0,0,
+  "non_scratch/eunji_ns1L_stretch",FALSE,0,0,
+  "non_scratch/junhong_ns1R_stretch",FALSE,0,0,
+  "non_scratch/junhong_ns1L_stretch",FALSE,0,0
+)
+
+walkdata <- c(
+  "non_scratch/jongin_ns2R",FALSE,0,0,
+  "non_scratch/jongin_ns2L",FALSE,0,0,
+  "non_scratch/eunji_ns2R",FALSE,0,0,
+  "non_scratch/eunji_ns2L",FALSE,0,0,
+  "non_scratch/junhong_ns2R",FALSE,0,0,
+  "non_scratch/junhong_ns2L",FALSE,0,0
+)
+
+total <- c(
+  "non_scratch/jongin_ns1R",FALSE,0,0,
+  "non_scratch/jongin_ns1L",FALSE,0,0,
+  "non_scratch/jongin_ns2R",FALSE,0,0,
+  "non_scratch/jongin_ns2L",FALSE,0,0,
+  "non_scratch/eunji_ns1R",FALSE,0,0,
+  "non_scratch/eunji_ns1L",FALSE,0,0,
+  "non_scratch/eunji_ns2R",FALSE,0,0,
+  "non_scratch/eunji_ns2L",FALSE,0,0,
+  "non_scratch/junhong_ns1R",FALSE,0,0,
+  "non_scratch/junhong_ns1L",FALSE,0,0,
+  "non_scratch/junhong_ns2R",FALSE,0,0,
+  "non_scratch/junhong_ns2L",FALSE,0,0
+)
+
+
+data1 <- getNonscratch(total, c(1,3,8)) # 499
+data2 <- getNonscratch(turnoverdata, c(1,3,8)) # 148
+data3 <- getNonscratch(pullblankdata, c(1,3,8)) # 46
+data4 <- getNonscratch(stretchdata, c(1,3,8)) # 77
+data5 <- getNonscratch(walkdata, c(1,3,8)) # 206
+
+
+data1v2 <- getNonscratch(total, c(1,3,8)) # 499
+data2v2 <- getNonscratch(turnoverdata, c(1,3,8)) # 148
+data3v2 <- getNonscratch(pullblankdata, c(1,3,8)) # 46
+data4v2 <- getNonscratch(stretchdata, c(1,3,8)) # 77
+data5v2 <- getNonscratch(walkdata, c(1,3,8)) # 206
+
+data2v3 <- getNonscratch(turnoverdata, c(1,3,8)) # 148
+data3v3 <- getNonscratch(pullblankdata, c(1,3,8)) # 46
+data4v3 <- getNonscratch(stretchdata, c(1,3,8)) # 77
+data5v3 <- getNonscratch(walkdata, c(1,3,8)) # 206
+data1v3 <- getNonscratch(total, c(1,3,8)) # 499
+
+length(data3v3$label)
+
+
+
+scrdata <- getDataN(folderlist, ranglist)
+
+
+getNonscratch<-function(filelist, sensorlist)
 {
-  tt<- getDataset2(NULL, c(
-    "non_scratch/jongin_ns1R",FALSE,0,0,
-    "non_scratch/jongin_ns1L",FALSE,0,0,
-    "non_scratch/jongin_ns2R",FALSE,0,0,
-    "non_scratch/jongin_ns2L",FALSE,0,0,
-    "non_scratch/eunji_ns1R",FALSE,0,0,
-    "non_scratch/eunji_ns1L",FALSE,0,0,
-    "non_scratch/eunji_ns2R",FALSE,0,0,
-    "non_scratch/eunji_ns2L",FALSE,0,0,
-    "non_scratch/junhong_ns1R",FALSE,0,0,
-    "non_scratch/junhong_ns1L",FALSE,0,0,
-    "non_scratch/junhong_ns2R",FALSE,0,0,
-    "non_scratch/junhong_ns2L",FALSE,0,0
-  ),i, 150, 50, TRUE, NULL)
-  
-  if(i=='1'){
-    sum_data <- tt[,1:length(tt)]
-  }else{
-    sum_data <- c(sum_data,tt[,6:length(tt)])
+  first <- sensorlist[1]
+  for(i in sensorlist)
+  {
+    tt<- getDataset2(NULL,filelist ,i, 150, 50, TRUE, NULL)
+    
+    if(i==first){
+      sum_data <- tt[,1:length(tt)]
+    }else{
+      sum_data <- c(sum_data,tt[,6:length(tt)])
+    }
+    
+    print(paste("index : ", i, "len : ", nrow(tt) ))
+    
   }
   
-  print(paste("index : ", i, "len : ", nrow(tt) ))
+  return(sum_data)
   
 }
+
+  
 

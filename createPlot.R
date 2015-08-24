@@ -7,7 +7,7 @@ y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity 
 
 
 createPlot <- function(data, idx, graph_title, saveFile, source_date, 
-                         set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ,windowing=FALSE, cutoff=FALSE, f_l=0.3, butter_type="high") {
+                         set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ,windowing=FALSE, cutoff=FALSE, f_l=0.3, butter_type="high", showing_legend = TRUE) {
   data.sub <- data
   if(set_btw){
     data.sub <- subset(data.sub, subset=(data.sub$time < end_hour ))
@@ -51,7 +51,7 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
       scale_color_manual(values=c("red")) +
       xlab(xlablename) +
       ylab(y_label_list[idx]) +
-      scale_x_continuous(breaks = spliting) +
+      scale_x_continuous(breaks = spliting, expand = c(0, 0)) +
       theme_bw() +
       theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
             axis.text.x = element_text(angle=40,hjust=1,vjust=1))
@@ -70,7 +70,7 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
       scale_color_manual(values=c("red","blue","black","violet")) +
       xlab(xlablename) +
       ylab(y_label_list[idx]) +
-      scale_x_continuous(breaks = spliting) +
+      scale_x_continuous(breaks = spliting,expand = c(0, 0)) +
       theme_bw() +
       theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
             axis.text.x = element_text(angle=40,hjust=1,vjust=1))
@@ -121,13 +121,13 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
 
   returnValue <- returnValue + geom_hline(aes(yintercept=threshold), colour="yellow")
   
-  print(returnValue)
+  #print(returnValue)
   
-  line.rcharts <- hPlot(x="cyl", y="mpg_mean", group="am", data=mtcars.mean, type="line")
+ # line.rcharts <- hPlot(x="cyl", y="mpg_mean", group="am", data=mtcars.mean, type="line")
   # Use this with 'Knit HTML' button
   # line.rcharts$print(include_assets=TRUE)
   # Use this with jekyll blog
-  line.rcharts$show('iframesrc', cdn=TRUE)
+#  line.rcharts$show('iframesrc', cdn=TRUE)
   
   res <- returnValue
   
@@ -256,6 +256,10 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
     
     print(returnValue)
   }
+
+  if(showing_legend==FALSE)
+    returnValue <- returnValue + theme(legend.position="none")
+
 
   return (returnValue)
 }

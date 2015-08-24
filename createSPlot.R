@@ -1,3 +1,116 @@
+###### for each type
+
+
+sim_scrType1 <- read.table("./data_raw/eunji/data1.txt",sep=",",header=TRUE)
+
+data.sub <- sim_scrType4
+createPlot(data.sub, 8 , "test", FALSE, "0815", set_btw = TRUE, start_hour = 0, end_hour = 25000)
+data.sub <- subset(data.sub, subset=(data.sub$time > 0 ))
+data.sub <- subset(data.sub, subset=(data.sub$time < 25000 ))
+createPlot(data.sub, 8 , "test", FALSE, "0815")
+
+sim_scrType4<-data.sub
+
+sim_scrType2 <- read.table("./data_raw/jonginlee_data0623/data2.txt",sep=",",header=TRUE)
+sim_scrType3 <- read.table("./data_raw/junhong_data0623/data3.txt",sep=",",header=TRUE)
+sim_scrType4 <- read.table("./data_raw/seungho/data4.txt",sep=",",header=TRUE) 
+
+sim_scrType1234 <- rbind(sim_scrType1, sim_scrType2, sim_scrType3, sim_scrType4)
+View(sim_scrType1234)
+
+sim_pullblanket1 <- read.table("./data_raw/non_scratch/eunji_ns1L_pullblank.txt",sep=",",header=TRUE)
+sim_pullblanket2 <- read.table("./data_raw/non_scratch/junhong_ns1R_pullblank.txt",sep=",",header=TRUE)
+sim_pullblanket1$X <- NULL
+sim_pullblanket2$X <- NULL
+
+sim_turnover1 <- read.table("./data_raw/non_scratch/eunji_ns1L_turnover.txt",sep=",",header=TRUE)
+sim_turnover2 <- read.table("./data_raw/non_scratch/junhong_ns1R_turnover.txt",sep=",",header=TRUE)
+sim_turnover1$X <- NULL
+sim_turnover2$X <- NULL
+
+sim_stretch1 <- read.table("./data_raw/non_scratch/jongin_ns1L_stretch.txt",sep=",",header=TRUE)
+sim_stretch2 <- read.table("./data_raw/non_scratch/eunji_ns1R_stretch.txt",sep=",",header=TRUE)
+sim_stretch1$X <- NULL
+sim_stretch2$X <- NULL
+
+sim_walk1 <- read.table("./data_raw/non_scratch/eunji_ns2L.txt",sep=",",header=TRUE)
+sim_walk2 <- read.table("./data_raw/non_scratch/junhong_ns2R.txt",sep=",",header=TRUE)
+sim_walk1$X <- NULL
+sim_walk2$X <- NULL
+
+sim_non_scratch <- rbind(sim_pullblanket1, sim_pullblanket2, sim_turnover1, sim_turnover2, sim_stretch1, sim_stretch2, sim_walk1, sim_walk2)
+
+
+sim_test_data <- rbind(sim_scrType1234, sim_non_scratch)
+
+sim_test_data$time <- c( (1:length(sim_test_data$time))*(1/50)*1000 )
+
+
+
+########
+
+range <- c( # scratch
+  3128600, 3131744, # 왼쪽 입가쪽 긁기 
+  6715609, 6718766, # 오른팔 상완 긁기
+  21753910, 21762920, # 오른쪽 볼 긁기 - 얼굴은 왼쪽 향함 
+  22402240, 22406900, # 배에 손둠 + 오른쪽 볼 긁기 + 오른쪽으로 돌아높기(마지막에)
+  22547660, 22552970 # 오른쪽 볼 긁기 + 똑바로 눕기 + 긁기 반동
+  )
+
+
+range2 <- c( # non-scratch
+  6498048, 6498048+11530, # 왼쪽으로 돌아눕기 
+  14566637, 14566637 + 9753, # 다리 내리기, 이불 정리, 주먹 쥐기
+  20070332, 20070332 + 6765, # 다리 움직임, 오른쪽 돌아눕기 
+  22648137, 22648137 + 5768, # 배에 손두고, 긁기 반동
+  22527186, 22527186 + 8357 # 머리 다듬기 3회
+)
+
+combinded <-function (data, range, idx=1)
+{
+  sum_data <- 0
+  
+  num<-length(range)/2
+  print(num)
+  for(i in 1:num)
+  {
+    data.sub <- data
+    start_hour <- range[2*i-1] - 1000*10
+    end_hour <- range[2*i] + 1000*20
+    print(paste("s",start_hour,"e",end_hour))
+    data.sub <- subset(data.sub, subset=(data.sub$time < end_hour ))
+    data.sub <- subset(data.sub, subset=(data.sub$time > start_hour ))
+    res <- createPlot(data.sub, idx, "test", FALSE, "p3")
+
+    if(i==1)
+      sum_data <- data.sub
+    else{
+      sum_data <- rbind(sum_data, data.sub)
+    }
+  }
+  return(sum_data)
+}
+
+
+data_combinded.sub <- subset(data_combinded,grepl(list[1], data_combinded$type))
+
+data.sub <- subject3_left_data
+data.sub <- subset(data.sub, subset=(data.sub$time < end_hour ))
+data.sub <- subset(data.sub, subset=(data.sub$time > start_hour ))
+
+length(data.sub$x)
+
+total_combined <- rbind(data_combinded, data_combinded2, simulated_0807_for_features)
+total_combined$time <- c( (1:length(total_combined$time))*(1/50)*1000 )
+
+length(combined$x)
+
+
+
+
+
+
+
 # "/Users/jonginlee/Documents/recorded6.wav"
 # http://samcarcagno.altervista.org/blog/basic-sound-processing-r/
 # http://samcarcagno.altervista.org/blog/basic-sound-processing-r/

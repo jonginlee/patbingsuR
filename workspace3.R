@@ -109,17 +109,54 @@ colnamelist<-colnames(data3)
 res<-vector("list",2)
 names(res)<-c("feature","distance")
 createHistFromfeatures("Linearaccel_th_y", "scrtype", data3, 0.1, normalized = FALSE, title = "0727_p3_data")
+#----
+  
+
+
+createHistFromfeatures("Linearaccel_th_y", "scrtype", sim_nonscr_scr_data0803_sub_fair, 0.1, normalized = FALSE, title = "0727_p3_data")
+
+
+
+
+colnames(sim_nonscr_scr_data0803_sub_fair)
+
+
+colnames(total)
+
+relatedfeatures <- c (
+  "Linearaccel_th_avg",                        
+  "Linearaccel_autocor2_avg",
+  "Linearaccel_var_avg",
+  "Linearaccel_peakfreq_avg")
+
+
+ourfeatures <- c("Linearaccel_getProminantPeakfreq_avg.b_a."  , 
+                 "Linearaccel_getWeakPeakfreq_avg.b_a."        , "Linearaccel_prominentAutoPeakValley_avg.b_a.",
+                 "Linearaccel_weakpeakAutoPeakValley_avg.b_a." , "Linearaccel_height1stPeakValleyAuto_avg.b_a.",
+                 "Linearaccel_zerocrossingrate.b_a." )
+
+
+for(i in 1:length(ourfeatures))
+{
+  createHistFromfeatures(ourfeatures[i], "scrtype", total, 0.1, normalized = FALSE, title = "title")  
+  createHistFromfeatures(ourfeatures[i], "label", total, 0.1, normalized = FALSE, title = "title")  
+}
+
+
+createHistFromfeatures("Linearaccel_zerocrossingrate_avg", "scrtype", total, 0.1, normalized = FALSE, title = "title")
+
 
 for(i in 2: length(colnamelist))
 {
   colname <- colnamelist[i]
   dis <- createHistFromfeatures(colname, "scrtype", data3, 0.1,scratch=FALSE,normalized = FALSE)
- # res$feature[i-1] <- colname
- # res$distance[i-1] <- dis
+  # res$feature[i-1] <- colname
+  # res$distance[i-1] <- dis
 }
 
 t<-res[order(res$distance,decreasing=TRUE),]
 t[c(1:15),]
+
 
 getNormalize<-function(data, afeature)
 {
@@ -130,8 +167,9 @@ getNormalize<-function(data, afeature)
 
 library("monomvn")
 
-createHistFromfeatures <- function(afeature, afillitem, data, bwidth, normalized = TRUE , scratch =TRUE, title ="noname" ,saveFile=FALSE)
+createHistFromfeatures <- function(afeature, afillitem, data, bwidth, normalized = TRUE , scratch =TRUE, title ="noname" ,saveFile=FALSE, type="seperate")
 {
+  require(easyGgplot2)
   if(normalized)
   {
     data[,c(afeature)]<-getNormalize(data, afeature)
@@ -143,6 +181,7 @@ createHistFromfeatures <- function(afeature, afillitem, data, bwidth, normalized
     maxV <- max(data[,c(afeature)])
     bwidth <- (maxV - minV)/(bwidth*100)
     xdesc <- paste("Range (",minV,"~",maxV,")")
+    print(xdesc)
   }
   
   kldis<-0
@@ -151,18 +190,45 @@ createHistFromfeatures <- function(afeature, afillitem, data, bwidth, normalized
   if(scratch){
     scr_data <- subset(data, subset<-(data$label == "scratch"))
     non_data <- subset(data, subset<-(data$label == "non"))
-    kldis<-kl.norm(mean(scr_data[,c(afeature)]),cov(as.matrix(scr_data[,c(afeature)])),mean(non_data[,c(afeature)]),cov(as.matrix(non_data[,c(afeature)])) )
-    print(paste(afeature," , kldis",kldis))
+    #kldis<-kl.norm(mean(scr_data[,c(afeature)]),cov(as.matrix(scr_data[,c(afeature)])),mean(non_data[,c(afeature)]),cov(as.matrix(non_data[,c(afeature)])) )
+    #print(paste(afeature," , kldis",kldis))
     desc <- paste(desc,", kldis-",kldis)
   }
   
+  if(afillitem=="label")
+  {
+    data[,c(afillitem)] <- as.factor(data[,c(afillitem)])
+    data[,c(afillitem)] <- relevel(data[,c(afillitem)], "scratch")
+  }
+  else if(afillitem =="scrtype")
+  {
+    Label <- c("1"="scrtype1","2"="scrtype2","3"="scrtype3","4"="scrtype4","5"="walk","6"="turnover","7"="stretch","8"="pullblanket")
+    data[,c(afillitem)] <- factor(data[,c(afillitem)], levels = names(Label),
+                                  labels=Label
+    )
+  }
   
-  resValue <- qplot(data=data, x=data[,c(afeature)], fill=as.factor(data[,c(afillitem)]), geom='histogram', binwidth=bwidth) + 
-    scale_fill_manual(values=rainbow(12)) + 
-    labs(list(title = paste(afeature, ",",desc ), x = xdesc, y = "Frequency ", fill = "class")) +
-    theme_bw() +
-    theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
-          axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+  if(type=="seperate")
+  {
+    resValue <- ggplot2.histogram(data=data, xName=afeature, groupName =afillitem, legendPosition = "top", binwidth=bwidth,
+                                  faceting=TRUE, facetingVarNames = afillitem
+    ) +
+      scale_fill_manual(values=c("red","yellow","green","violet","orange","blue","pink","cyan")) +     
+      theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
+  }else{
+    resValue <- qplot(data=data, x=data[,c(afeature)], fill=as.factor(data[,c(afillitem)]), geom='histogram', binwidth=bwidth) + 
+      scale_fill_manual(values=c("red","yellow","green","violet","orange","blue","pink","cyan")) + 
+      labs(list(title = paste(afeature, ",",desc ), x = xdesc, y = "Frequency (# of window) ", fill = "class")) +
+      theme_bw() +
+      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
+            axis.text.x = element_text(angle=40,hjust=1,vjust=1))    
+  }
+  
+  
+  
+  
   
   if(normalized)
     resValue <- resValue <- xlim(0, 1)
@@ -177,7 +243,6 @@ createHistFromfeatures <- function(afeature, afillitem, data, bwidth, normalized
   
   return(kldis)
 }
-
 
 
 
