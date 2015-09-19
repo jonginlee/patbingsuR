@@ -190,6 +190,115 @@ getWindowset<-function(scratch_filelist, non_scratch_filelist, sensor_indexes, w
   return(sum_data)
 }
 
+sim_data <-read.arff("./data_csv/sim_data_0906_scr_type1234.arff")
+sim_data$label <- factor(sim_data$label)
+train_control <- trainControl(method="cv", number=10)
+
+View(sim_data[c(1,267:302)])
+sim_model1 <- train(label~., data=sim_data[c(1,267:302)], trControl = train_control,  method="glm")
+
+View(sim_data[c(1,50:85)])
+sim_model1_gyro <- train(label~., data=sim_data[c(1,50:85)], trControl = train_control,  method="glm")
+
+View(sim_data[c(1,231:266)])
+sim_model1_noPCA <- train(label~., data=sim_data[c(1,231:266)], trControl = train_control,  method="glm")
+
+View(sim_data[c(1,379:414)])
+auto_sim_model1_PCA <- train(label~., data=sim_data[c(1,379:414)], trControl = train_control,  method="glm")
+
+View(sim_data[c(1,303:314)])
+auto_sim_model1_max <- train(label~., data=sim_data[c(1,303:314)], trControl = train_control,  method="glm")
+
+View(sim_data[c(1,86:97)])
+auto_sim_model1_PCA_gyro <- train(label~., data=sim_data[c(1,86:97)], trControl = train_control,  method="glm")
+
+####
+
+View(combined.model1data[c(1,2:13)]) # 1D gyro spacial features (mag)
+View(combined.model1data[c(1,86:97)]) # 1D gyro time related features (max)
+train_control <- trainControl(method="cv", number=10)
+sim_1Dmodel1 <- train(label~., data=combined.model1data[c(1,2:13,86:97)], trControl = train_control,  method="glm")
+
+View(combined.model2data[c(1,267:302)]) # 3D accel spacial features 
+View(combined.model2data[c(1,379:414)]) # 3D accel time related features 
+sim_1Dmodel1 <- train(label~., data=combined.model1data[c(1,2:13,86:97)], trControl = train_control,  method="glm")
+sim_3Dmodel2 <- train(label~., data=combined.model2data[c(1,267:302,379:414)], trControl = train_control,  method="glm")
+
+#
+
+View(combined.model1data[c(1,2:13,219:230)]) # 1D gyro spacial features (mag), + 1D accel spacial features (mag)
+View(combined.model1data[c(1,86:97,303:314)]) # 1D gyro time related features (max), + 1D accel time-related features (max)
+train_control <- trainControl(method="cv", number=10)
+sim_1Dmodel1 <- train(label~., data=combined.model1data[c(1,2:13,86:97,219:230,303:314)], trControl = train_control,  method="glm")
+sim_1Dmodel1
+
+View(combined.model2data[c(1,267:302)]) # 3D accel spacial features
+View(combined.model2data[c(1,379:414)]) # 3D accel time related features 
+sim_3Dmodel2 <- train(label~., data=combined.model2data[c(1,267:302,379:414)], trControl = train_control,  method="glm")
+sim_3Dmodel2
+
+#
+
+View(sim_data0910_model1[c(1,72:83,282:293)]) # 1D gyro spacial features (mag)
+View(sim_data0910_model1[c(1,2:11,212:221)]) # 1D gyro time related features (max)
+train_control <- trainControl(method="cv", number=10)
+sim_1Dmodel1 <- train(label~., data=sim_data0910_model1[c(1,2:11,72:83,212:221,282:293)], trControl = train_control,  method="glm")
+sim_1Dmodel1
+
+
+View(sim_data0910_model2[c(1,152:187,362:397)]) # 3D accel, gyro auto features
+#View(combined.model2data[c(1,379:414)]) # 3D accel time related features 
+sim_3Dmodel2 <- train(label~., data=sim_data0910_model2[c(1,152:187,362:397)], trControl = train_control,  method="glm")
+
+summary(sim_3Dmodel2)
+sim_3Dmodel2
+
+#####
+
+View(sim_data[c(1,98:109)])
+sim_model1 <- train(label~., data=sim_data[c(1,98:109)], trControl = train_control,  method="glm")
+sim_model2 <- train(label~., data=sim_data[c(1,98:109)], trControl = train_control,  method="J48")
+sim_model3 <- train(label~., data=sim_data[c(1,98:109)], trControl = train_control,  method="svmLinear")
+
+predictions <- predict(sim_model1, sim_data[c(1,98:109)])
+confusionMatrix(predictions, sim_data$label)
+sim_model1
+
+
+View(sim_data[c(1,127:138)])
+sim_model1_auto <- train(label~., data=sim_data[c(1,127:138)], trControl = train_control,  method="glm")
+sim_model2_auto <- train(label~., data=sim_data[c(1,127:138)], trControl = train_control,  method="J48")
+sim_model3_auto <- train(label~., data=sim_data[c(1,127:138)], trControl = train_control,  method="svmLinear")
+
+sim_model1_auto
+predictions <- predict(sim_model1_auto, sim_data[c(1,127:138)],type = "prob")
+predictions$label <- sim_data$label
+plot(c(1:length(predictions$non)), sort(predictions$scratch), col = (predictions$label[order(predictions$scratch)]))
+
+confusionMatrix(predictions, sim_data$label)
+
+View(sim_data[c(1,98:109,127:138)])
+sim_model1_auto_g <- train(label~., data=sim_data[c(1,98:109,127:138)], trControl = train_control,  method="glm")
+sim_model2_auto_g <- train(label~., data=sim_data[c(1,98:109,127:138)], trControl = train_control,  method="J48")
+sim_model3_auto_g <- train(label~., data=sim_data[c(1,98:109,127:138)], trControl = train_control,  method="svmLinear")
+
+predictions <- predict(sim_model3_auto_g, sim_data[c(98:109,127:138)])
+confusionMatrix(predictions, sim_data$label)
+
+
+##
+
+real_data$label <- factor(real_data$label)
+train_control <- trainControl(method="cv", number=10)
+View(real_data[c(1,50:61)])
+real_data.sub <- real_data[c(1,50:61)]
+real_data.sub[c(2:length(real_data.sub))] <-  lapply((real_data.sub[c(2:length(real_data.sub))]), as.numeric)
+View(real_data.sub)
+model <- train(label~., data=real_data[c(1,50:61)], trControl = train_control,  method="J48")
+predictions <- predict(model, real_data[c(1,50:61)])
+confusionMatrix(predictions, real_data$label)
+remove(predictions)
+
 getModelBy <- function(scratch_filelist, non_scratch_filelist, sensor_indexes, window_size, window_step,
                        selected_indexs, ML_method, plotting=FALSE,thresholdvar = 0.1)
 {

@@ -105,10 +105,11 @@ createPlotByFeature(paste(featurename,20,"_filtering",filtering), total_combined
 
 createPlotByFeature <- function(graph_title, data, idx, window_size, window_step, feature_type, 
                                  set_btw=FALSE, start_hour=1.1, end_hour=1.1, x_type="time", opt_lag=12,mag=FALSE,
-                                cutoff=FALSE, f_l=0.1, butter_type="low", saveFile=FALSE,
+                                cutoff=FALSE, f_l=15, butter_type="low", saveFile=FALSE,
                                 neith_th = 0.01,  min_th = 0.01, max_th = 0.01, filtering = FALSE, filtering2 = FALSE,
-                                startLag = 26, thresholdvar=0.1,f_l2=10,b_avg =FALSE,doublecnt=FALSE, type = "mag", signal_type = "no",
-                                powerband_from = 0, powerband_to = 0, filter_type = "low", order = 1, filter_num = 1, spanV = 0.4
+                                startLag = 26, thresholdvar=0.1,f_l2=15,b_avg =FALSE,doublecnt=FALSE, type = "mag", signal_type = "no",
+                                powerband_from = 0, powerband_to = 0, filter_type = "low", order = 1, filter_num = 1, spanV = 0.4,
+                                prefiltering = FALSE, prefilter_num = 1
                                 )
 {
   data.sub <- subset(data,grepl(list[idx], data$type))
@@ -172,7 +173,9 @@ createPlotByFeature <- function(graph_title, data, idx, window_size, window_step
 #        }
      #   print(paste("window_data len ", length(window_data$x), ",   window_data_prev len", length(window_data_prev$x)))
         
-        features <- getFeatureBy(window_data, feature_type, opt_lag, avg = mag, neith_th = neith_th,  min_th = min_th, max_th = max_th, powerband_from = powerband_from, powerband_to = powerband_to, 
+        features <- getFeatureBy(window_data, feature_type, opt_lag, avg = mag, neith_th = neith_th,  min_th = min_th, max_th = max_th, prefiltering = prefiltering, 
+                                 prefilter_num = prefilter_num,
+                                 powerband_from = powerband_from, powerband_to = powerband_to, 
                                  filtering = filtering,startLag = startLag, type = type, doublecnt = doublecnt, filter_type = filter_type, order = order,
                                  filter_num = filter_num, spanV = spanV, window_data_prev = window_data_prev, filtering2 = filtering2,
                                  f_l=f_l2,b_avg = b_avg,signal_type = signal_type)

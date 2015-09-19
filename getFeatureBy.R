@@ -270,23 +270,130 @@ getIntegrateSignal <- function(signal)
   return(res)
 }
 
-getNumCrossingRate<-function(signal)
+getCrossingAmplitudePower<-function(signal)
 {
+  idxs<-getPeakValleyIdx(signal, thresh = 0)
+  idxs <- idxs -1
   cnt<-0
+  if(length(idxs)<=1)
+    return(0)
+  
   if(any(is.na(signal))){
     return (0)
   }
   if(length(signal)<2)
     return (0)
-  
-  for(i in 2:length(signal))
+  #  print("idxs")
+  #  print(idxs)
+  cnt2 <-0
+  for(i in 2:length(idxs))
   {
-    if(signal[i]*signal[i-1]<0)
-      cnt<-cnt+1
+    if(signal[idxs[i]]*signal[idxs[i-1]]<0){
+      cnt<-cnt+(abs(signal[idxs[i-1]]) + abs(signal[idxs[i]]))
+      cnt2 <- cnt2 +1
+    }
   }
-  return(cnt/(length(signal)-1))
+  
+  return(cnt)
 }
 
+
+
+
+getCrossingSpacePower<-function(signal, time, beta = 10)
+{
+  idxs<-getPeakValleyIdx(signal, thresh = 0.001)
+  idxs <- idxs -1
+  cnt<-0
+  if(length(idxs)<=1)
+    return(0)
+  
+  if(any(is.na(signal))){
+    return (0)
+  }
+  if(length(signal)<2)
+    return (0)
+  #  print("idxs")
+  #  print(idxs)
+  
+  spacelist<-1
+  
+  #  print(paste("len",length(time), length(signal)))
+  #  print(idxs)
+  spidx <- 1
+  for(i in 2:length(idxs))
+  {
+    if(signal[idxs[i]]*signal[idxs[i-1]]<0){
+      spacelist[spidx] <- as.numeric(time[idxs[i]]) - as.numeric(time[idxs[i-1]])
+      spidx <- spidx + 1
+    }
+  }
+  
+  if(length(spacelist)==1)
+    return (0)
+  
+  #print(paste("len",length(spacelist),"sd", sd(spacelist)))
+  return (exp(-1*sd(spacelist)/beta/length(spacelist)))
+  
+}
+
+getCrossingKurtosisPower<-function(signal, time, beta = 100)
+{
+  require(moments)
+  idxs<-getPeakValleyIdx(signal, thresh = 0.005)
+  idxs <- idxs -1
+  cnt<-1
+  if(length(idxs)<=1)
+    return(0)
+  
+  if(any(is.na(signal))){
+    return (0)
+  }
+  if(length(signal)<2)
+    return (0)
+  #  print("idxs")
+  #  print(idxs)
+  
+  spacelist<-1
+  
+  #print(paste("len",length(time), length(signal)))
+  #print(idxs)
+  spidx <- 1
+  bins <- 3
+  for(i in 2:length(idxs))
+  {
+    if(signal[idxs[i]]*signal[idxs[i-1]]<0){
+      temp_sum <- 0
+      if( (idxs[i]>(bins)) & (idxs[i]<=(length(signal)-bins)) ){
+        data <- signal[(idxs[i]-bins):(idxs[i]+bins)]        
+        if(kurtosis(data)>=2){
+          temp_sum <- temp_sum + kurtosis(data)
+          #print(paste("1st",kurtosis(data)))
+          cnt <- cnt + 1
+        }
+      }
+      
+      if( (idxs[i-1]>(bins)) & (idxs[i-1]<(length(signal)-bins)) ){
+        data <- signal[(idxs[i-1]-bins):(idxs[i-1]+bins)]
+        if(kurtosis(data)>=2)
+        {
+          temp_sum <- temp_sum + kurtosis(data)
+          #print(paste("2nd", kurtosis(data)))
+          cnt <- cnt + 1          
+        }
+      }
+      
+      spacelist[spidx] <- temp_sum
+      spidx <- spidx + 1
+    }
+  }
+  
+  if(length(spacelist)==1)
+    return (0)
+  
+  #print(paste("len",length(spacelist),"sum", sum(spacelist), "sum/cnt", sum(spacelist)/cnt))
+  return (cnt)
+}
 
 
 getBestCase<-function(arrays, feature_type)
@@ -327,7 +434,7 @@ getBestCase<-function(arrays, feature_type)
            res <- max(arrays)
          },
          weakpeakAutoPeakValley={
-           res <- max(arrays)
+           res <- min(arrays)
          },
          getProminantPeakfreq={
            res <- mean(arrays)
@@ -339,6 +446,27 @@ getBestCase<-function(arrays, feature_type)
            res <- max(arrays)
          },
          harmPeak = {
+           res <- max(arrays)
+         },
+         autocorrelationBins = {
+           res <- max(arrays)
+         },
+         getCrossingSpacePower = {
+           res <- max(arrays)
+         },
+         getCrossingKurtosisPower = {
+           res <- max(arrays)
+         },
+         crossingAmplitudePower = {
+           res <- max(arrays)
+         },
+         weakAmplitudeBins = {
+           res <- max(arrays)
+         },
+         strongAmplitudeBins = {
+           res <- max(arrays)
+         },
+         variance = {
            res <- max(arrays)
          }
          
@@ -352,9 +480,10 @@ getBestCase<-function(arrays, feature_type)
 
 
 getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, thr = 0.01, type = "mag", sampling.rate = 50,
-                         powerband_from=0, powerband_to=0, startLag=26, f_l=20, filtering=FALSE, selection=TRUE , filter_num =1, spanV = 0.4,
+                         powerband_from=0, powerband_to=0, startLag=5, f_l=20, filtering=FALSE, selection=TRUE , filter_num =1, spanV = 0.4,
                          neith_th = 0.01,  min_th = 0.01, max_th = 0.01, b_avg = FALSE, doublecnt = FALSE, signal_type ="no_signal" ,filter_type ="low", 
-                         order =5, window_data_prev = NULL, filtering2 = FALSE
+                         order = 5, window_data_prev = NULL, filtering2 = FALSE, prefiltering = FALSE, prefilter_num = 1, pre_f_l = 12,
+                         pre_spanV = 0.4, pre_f_l2 = 0.8, rotationBy = FALSE
                          )
 {
  
@@ -365,6 +494,85 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
   
   
 
+
+  
+  
+  
+  
+  if(prefiltering == TRUE)
+  {
+    if(prefiltering & (prefilter_num == 1)){
+      bf2 <- butter(order, (2*pre_f_l)/(sampling.rate), type="low")
+      
+#      bf3 <- butter(order, (2*pre_f_l2)/(sampling.rate), type="high")
+      
+      window_data$x <- filtfilt( bf2, window_data$x)
+      window_data$y <- filtfilt( bf2, window_data$y)
+      window_data$z <- filtfilt( bf2, window_data$z)
+      
+#      window_data$x <- filtfilt( bf3, window_data$x)
+#      window_data$y <- filtfilt( bf3, window_data$y)
+#      window_data$z <- filtfilt( bf3, window_data$z)
+      
+    }else if(prefiltering & (prefilter_num == 2))
+    {
+      df <- data.frame(time_hour = window_data$time, x = window_data$x, y = window_data$y, z = window_data$z )
+      window_data$x <- predict(loess(x~time_hour, df, span = pre_spanV), df$time_hour)
+      window_data$y <- predict(loess(y~time_hour, df, span = pre_spanV), df$time_hour)
+      window_data$z <- predict(loess(z~time_hour, df, span = pre_spanV), df$time_hour)
+    }else if(prefiltering & (prefilter_num == 3))
+    {
+      df <- data.frame(time_hour = window_data$time, x = window_data$x, y = window_data$y, z = window_data$z )
+      sx <- predict(smooth.spline(df$time_hour, df$x, spar = pre_spanV), df$time_hour)
+      sy <- predict(smooth.spline(df$time_hour, df$y, spar = pre_spanV), df$time_hour)
+      sz <- predict(smooth.spline(df$time_hour, df$z, spar = pre_spanV), df$time_hour)
+      #print(paste("x spar ", smooth.spline(df$time_hour, df$x, cv=T)$spar ))
+      #print(paste("y spar ", smooth.spline(df$time_hour, df$y, cv=T)$spar ))
+      #print(paste("z spar ", smooth.spline(df$time_hour, df$z, cv=T)$spar ))
+      
+      window_data$x <- sx$y
+      window_data$y <- sy$y
+      window_data$z <- sz$y
+    }else if(prefiltering & (prefilter_num == 4))
+    {
+      df <- data.frame(time_hour = window_data$time, x = window_data$x, y = window_data$y, z = window_data$z )
+      window_data$x <- movingAverage(df$x, pre_spanV, TRUE)
+      window_data$y <- movingAverage(df$y, pre_spanV, TRUE)
+      window_data$z <- movingAverage(df$z, pre_spanV, TRUE)
+    }
+  }
+
+
+if(rotationBy){
+  trans <- preProcess(window_data[,3:5], method=c("BoxCox", "center", "scale", "pca"), thresh = 0.999999999)
+  PC <- predict(trans, window_data[,3:5])
+  
+  #    temp_m<-list()
+  #    for(i2 in 1:length(window_data$x)){
+  #      temp <-  c(window_data$x[i2], window_data$y[i2], window_data$z[i2]) %*%  trans$rotation 
+  #      temp_m$x[i2] <- temp[1]
+  #      temp_m$y[i2] <- temp[2]
+  #      temp_m$z[i2] <- temp[3]
+  #print(i)
+  #    }
+  
+  #    window_data$x <- as.numeric(temp_m$x)
+  #    window_data$y <- as.numeric(temp_m$y)
+  #    window_data$z <- as.numeric(temp_m$z)
+  #    if(anyNA(temp_m$x)){
+  #      print("temp_m_x")
+  #    }
+  #    if(anyNA(temp_m$y)){
+  #      print("temp_m_y")
+  #      View(window_data)
+  #    }
+  #    if(anyNA(temp_m$z)){
+  #      print("temp_m_z")
+  #      View(window_data)      
+  #    }
+  window_data <- data.frame( x = PC$PC1, y = PC$PC2, z = PC$PC3, time = window_data$time)
+  
+}
 
   
   res<-0
@@ -418,8 +626,9 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
       
     }
     
-    if( (signal_type == "autocorrelation") & (filtering2 == TRUE) & (length(window_data_prev)!=0) )
+    else if( (signal_type == "autocorrelation") & (filtering2 == TRUE) & (length(window_data_prev)!=0) )
     {
+      print("cross- correlation")
       signal_x_prev <- getAutocorrelationSignal(window_data_prev$x, startLag)
       signal_x <- getAutocorrelationSignal(window_data$x, startLag)      
       signal_x <- getCrosscorrelationSignal( signal_x_prev, signal_x, startLag = 1 )
@@ -436,6 +645,8 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
       window_data <- data.frame( x = signal_x, y = signal_y, z = signal_z, time = window_data$time[startLag:length(window_data$time)])
       
     }
+    
+
     
     
     if(filtering == TRUE)
@@ -470,14 +681,72 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
         window_data$x <- movingAverage(df$x, spanV, TRUE)
         window_data$y <- movingAverage(df$y, spanV, TRUE)
         window_data$z <- movingAverage(df$z, spanV, TRUE)
-        
       }
     }
   }
   
   
 
-  switch(feature_type,      
+  switch(feature_type,     
+         kurtosis3D={
+           require("moments")
+           if(avg == FALSE){
+             res <- c( kurtosis(window_data$x), kurtosis(window_data$y), kurtosis(window_data$z) )
+           }else
+             res <- c(1)
+         },
+         ellipse3D={
+           if(avg == FALSE){
+             res <- c( var(window_data$x)/var(window_data$y), var(window_data$x)/var(window_data$z), var(window_data$y)/var(window_data$z) )
+           }else
+             res <- c(1)
+         },
+         autocorrelationBins={
+           if(avg == TRUE){
+             res <- c( getLagBins(window_data$avg, powerband_from, powerband_to) )
+           }else {
+             res <- c( getLagBins(window_data$x,  powerband_from, powerband_to), getLagBins(window_data$y,  powerband_from, powerband_to), 
+                       getLagBins(window_data$z,  powerband_from, powerband_to) )
+             if(b_avg==TRUE)
+               res <- getBestCase(res, feature_type)
+           }
+         },
+         weakAmplitudeBins={
+           if(avg == TRUE){
+             res <- c( getAmplitudeBins(window_data$avg, "weak") )
+           }else {
+             res <- c( getAmplitudeBins(window_data$x, "weak"), getAmplitudeBins(window_data$y, "weak"), getAmplitudeBins(window_data$z, "weak") )
+             if(b_avg==TRUE)
+               res <- getBestCase(res, feature_type)
+           }
+         },
+         strongAmplitudeBins={
+           if(avg == TRUE){
+             res <- c( getAmplitudeBins(window_data$avg, "strong") )
+           }else {
+             res <- c( getAmplitudeBins(window_data$x, "strong"), getAmplitudeBins(window_data$y, "strong"), getAmplitudeBins(window_data$z, "strong") )
+             if(b_avg==TRUE)
+               res <- getBestCase(res, feature_type)
+           }
+         },
+         getCrossingKurtosisPower={
+           if(avg == TRUE){
+             res <- c( getCrossingKurtosisPower(window_data$avg, window_data$time) )
+           }else {
+             res <- c( getCrossingKurtosisPower(window_data$x, window_data$time), getCrossingKurtosisPower(window_data$y, window_data$time), getCrossingKurtosisPower(window_data$z, window_data$time) )
+             if(b_avg==TRUE)
+               res <- getBestCase(res, feature_type)
+           }
+         },
+         getCrossingSpacePower = {
+           if(avg == TRUE){
+             res <- c( getCrossingSpacePower(window_data$avg, window_data$time) )
+           }else {
+             res <- c( getCrossingSpacePower(window_data$x, window_data$time), getCrossingSpacePower(window_data$y, window_data$time), getCrossingSpacePower(window_data$z, window_data$time) )
+             if(b_avg==TRUE)
+               res <- getBestCase(res, feature_type)
+           }
+         },
          harmValley={
            if(avg==TRUE){
              res <- c(getHarm(window_data$avg, window_data$time, type = "valley"))
@@ -495,13 +764,13 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
            if(b_avg==TRUE)
              res <- getBestCase(res, feature_type)
          },
-         VarPeakSpacing={
+         SDPeakValleySpacing={
            if(avg==TRUE){
-             res <- c( getVarPeakSpacing(window_data$avg,  time =  window_data$time, thresh = 0) )
+             res <- c( getSDPeakValleySpacing(window_data$avg,  time =  window_data$time, thresh = 0.001) )
            }else{
-             res <- c( getVarPeakSpacing(window_data$x,time =  window_data$time, thresh = 0) ,
-                       getVarPeakSpacing(window_data$y,time =  window_data$time, thresh = 0) ,
-                       getVarPeakSpacing(window_data$z,time =  window_data$time, thresh = 0) 
+             res <- c( getSDPeakValleySpacing(window_data$x,time =  window_data$time, thresh = 0.001) ,
+                       getSDPeakValleySpacing(window_data$y,time =  window_data$time, thresh = 0.001) ,
+                       getSDPeakValleySpacing(window_data$z,time =  window_data$time, thresh = 0.001) 
              )
            }
          },
@@ -620,7 +889,7 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
              if(any(is.na(signal)))
                res <- c(0)
              else
-               res <- c( getNumCrossingRate(signal) )
+               res <- c( getCrossingAmplitudePower(signal) )
            }
            else{
              signal_x <- as.double(ifft(log(abs(fft(window_data$x)))))
@@ -630,16 +899,16 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
              if(any(is.na(signal_x), is.na(signal_y), is.na(signal_z)))
                res <- c(0,0,0)
              else
-              res <- c( getNumCrossingRate(signal_x), getNumCrossingRate(signal_y), getNumCrossingRate(signal_z) )
+              res <- c( getCrossingAmplitudePower(signal_x), getCrossingAmplitudePower(signal_y), getCrossingAmplitudePower(signal_z) )
 
            }
            
          },
-         zerocrossingrate={
+         crossingAmplitudePower={
            if(avg == TRUE){
-             res <- c( getNumCrossingRate(window_data$avg) )
+             res <- c( getCrossingAmplitudePower(window_data$avg) )
            }else {
-             res <- c( getNumCrossingRate(window_data$x), getNumCrossingRate(window_data$y), getNumCrossingRate(window_data$z) )
+             res <- c( getCrossingAmplitudePower(window_data$x), getCrossingAmplitudePower(window_data$y), getCrossingAmplitudePower(window_data$z) )
              if(b_avg==TRUE)
                res <- getBestCase(res, feature_type)
            }
@@ -1066,6 +1335,10 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
              res <- c( var(window_data$avg) )
            }else{
              res <- c(var(window_data$x),var(window_data$y),var(window_data$z))
+             if(b_avg==TRUE)
+             {
+               res <- getBestCase(res, feature_type)
+             }
            }
          },
          correlation={

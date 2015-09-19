@@ -32,8 +32,8 @@ write.csv(sum_data, "./data_csv/p3/p3leftdata_0.424.csv")
 subject2_left_data <- read.table("./data_raw/p2/subject2_left.txt",sep=",",header=TRUE)
 s2_left_scr_info <-  read.csv("./data_raw/p2/subject2_left_scratch.csv",header=TRUE)
 
-sum_data<-getLabeledData(subject2_left_data,s2_left_scr_info,"s2_left_scr_08024v3") # 0806
-write.csv(sum_data, file=paste("./data_csv/p2/subject2_left_data08024v3.csv",sep=""), row.names=F)
+sum_data<-getLabeledData(subject2_left_data,s2_left_scr_info,"s2_left_scr_0915") # 0806
+write.csv(sum_data, file=paste("./data_csv/p2/subject2_left_0915.csv",sep=""), row.names=F)
 
 remove(subject2_left_data)
 
@@ -41,8 +41,8 @@ remove(subject2_left_data)
 subject2_right_data <- read.table("./data_raw/p2/subject2_right.txt",sep=",",header=TRUE)
 s2_right_scr_info <-  read.csv("./data_raw/p2/subject2_right_scratch.csv",header=TRUE)
 
-sum_data<-getLabeledData(subject2_right_data,s2_right_scr_info,"s2_right_scr_08024v3")
-write.csv(sum_data, file=paste("./data_csv/p2/subject2_right_data08024v3.csv",sep=""), row.names=F)
+sum_data<-getLabeledData(subject2_right_data,s2_right_scr_info,"s2_right_scr_0915")
+write.csv(sum_data, file=paste("./data_csv/p2/subject2_right_0915.csv",sep=""), row.names=F)
 
 remove(subject2_right_data)
 
@@ -50,8 +50,8 @@ remove(subject2_right_data)
 subject3_left_data <- read.table("./data_raw/p3/subject3_left.txt",sep=",",header=TRUE)
 s3_left_scr_info <-  read.csv("./data_raw/p3/subject3_left_scratch.csv",header=TRUE)
 
-sum_data<-getLabeledData(subject3_left_data,s3_left_scr_info,"s3_left_scr_0824v3")
-write.csv(sum_data, file=paste("./data_csv/p3/subject3_left_data08024v3.csv",sep=""), row.names=F)
+sum_data<-getLabeledData(subject3_left_data,s3_left_scr_info,"s3_left_scr_0915")
+write.csv(sum_data, file=paste("./data_csv/p3/subject3_left_0915.csv",sep=""), row.names=F)
 
 remove(subject3_left_data)
 
@@ -59,19 +59,131 @@ remove(subject3_left_data)
 subject3_right_data <- read.table("./data_raw/p3/subject3_right.txt",sep=",",header=TRUE)
 s3_right_scr_info <-  read.csv("./data_raw/p3/subject3_right_scratch.csv",header=TRUE)
 
-sum_data<-getLabeledData(subject3_right_data,s3_right_scr_info,"s3_right_scr_08024v3")
-write.csv(sum_data, file=paste("./data_csv/p3/subject3_right_data08024v3.csv",sep=""), row.names=F)
-
+sum_data<-getLabeledData(subject3_right_data,s3_right_scr_info,"s3_right_scr_0915")
+write.csv(sum_data, file=paste("./data_csv/p3/subject3_right_0915.csv",sep=""), row.names=F)
 
 remove(subject3_right_data)
 
+###
+
+subject4_right_data <- read.table("./subject_data/p4_gold/watch1_sensor_data.txt",sep=",",header=TRUE)
+s4_right_scr_info <-  read.csv("./subject_data/p4_gold/scratch_log.csv",header=TRUE)
+
+sum_data<-getLabeledData(subject4_right_data,s4_right_scr_info,"s4_right_scr_0912")
+write.csv(sum_data, file=paste("./subject_data/p4_gold/subject4_right_0912.csv",sep=""), row.names=F)
+
+remove(subject4_right_data)
+
+subject4_left_data <- read.table("./subject_data/p4_silver/watch1_sensor_data.txt",sep=",",header=TRUE)
+s4_left_scr_info <-  read.csv("./subject_data/p4_silver/scratch_log.csv",header=TRUE)
+
+sum_data<-getLabeledData(subject4_left_data,s4_left_scr_info,"s4_right_scr_0912")
+write.csv(sum_data, file=paste("./subject_data/p4_silver/subject4_right_0912.csv",sep=""), row.names=F)
+
+remove(subject4_left_data)
+
+###
+
+subject8_right_data <- read.table("./subject_data/p8_gold/watch1_sensor_data.txt",sep=",",header=TRUE)
+s8_right_scr_info <-  read.csv("./subject_data/p8_gold/scratch_log.csv",header=TRUE)
+
+sum_data<-getLabeledData(subject8_right_data,s8_right_scr_info,"s4_right_scr_0913")
+write.csv(sum_data, file=paste("./subject_data/p8_gold/subject8_right_0913.csv",sep=""), row.names=F)
+
+remove(subject8_right_data)
+
+subject8_left_data <- read.table("./subject_data/p8_silver/watch1_sensor_data.txt",sep=",",header=TRUE)
+s8_left_scr_info <-  read.csv("./subject_data/p8_silver/scratch_log.csv",header=TRUE)
+
+sum_data<-getLabeledData(subject8_left_data,s8_left_scr_info,"s4_left_scr_0913")
+write.csv(sum_data, file=paste("./subject_data/p8_silver/subject8_left_0913.csv",sep=""), row.names=F)
+
+remove(subject8_left_data)
+
+#############
+
+tes <- read.csv("./subject_data/scratch_log_total.csv", header=TRUE)
+#View(tes)
+length(unique(tes$sub_num))
+sub_n <- 12
+
+for(sub_n in unique(tes$sub_num)){
+  
+  tes_sub <- subset(tes, subset=(tes$sub_n == sub_n)) 
+  tes_sub <- subset(tes_sub, subset=(tes_sub$data_type == "log"))
+  tes_sub.right <- subset(tes_sub, subset=(tes_sub$watch == "right"))
+  if(length(tes_sub.right$scrtime)>1)    
+    for(i in 2:length(tes_sub.right$scrtime))
+    {
+      if( (tes_sub.right$scr_start[i] - tes_sub.right$scr_end[i-1]) < 3000 )
+        print(paste("sub_n ", sub_n, tes_sub.right$watch[i], tes_sub.right$scr_start[i] , tes_sub.right$scr_end[i-1], (tes_sub.right$scr_start[i] - tes_sub.right$scr_end[i-1])))
+    }
+  
+  tes_sub.left <- subset(tes_sub, subset=(tes_sub$watch == "left"))
+  if(length(tes_sub.left$scrtime)>1)    
+    for(i in 2:length(tes_sub.left$scrtime))
+    {
+      if( (tes_sub.left$scr_start[i] - tes_sub.left$scr_end[i-1]) < 3000 )
+        print(paste("sub_n ", sub_n, tes_sub.left$watch[i], tes_sub.left$scr_start[i] , tes_sub.left$scr_end[i-1], (tes_sub.left$scr_start[i] - tes_sub.left$scr_end[i-1])))
+    }
+  
+  #View(tes_sub)
+  scr_n3 <- length(subset(tes_sub, subset=(tes_sub$scrtime > 3000))$scrtime)
+  scr_n5 <- length(subset(tes_sub, subset=(tes_sub$scrtime > 5000))$scrtime)
+  scr_n10 <- length(subset(tes_sub, subset=(tes_sub$scrtime > 10000))$scrtime)
+  scr_n20 <- length(subset(tes_sub, subset=(tes_sub$scrtime > 20000))$scrtime)
+  
+#  print(paste("sub_n ", sub_n, "max ", max(tes_sub$scrtime), "min ", min(tes_sub$scrtime), "times ", length(tes_sub$scrtime)))
+  print(paste(" sub_n",sub_n,"  - 3s:",scr_n3,", 5s:",scr_n5,", 10s:",scr_n10,", 20s:",scr_n20 ))
+}
+
+
+sub_n <- 9
+for(i in 7)
+{
+  print(paste("i",i))
+}
+
+sub_n <- 8
+
+cdate<-0917
+for(sub_n in c(9)){
+  tes2 <- subset(tes, subset=(tes$sub_num == sub_n))
+  tes2
+  tes2_right <- subset(tes2, subset=(tes2$watch == "right"))
+  tes2_right_range <- subset(tes2_right, subset=(tes2_right$data_type == "meta"))
+  right_data <- read.table(paste("./subject_data/p",sub_n,"_gold/watch1_sensor_data.txt",sep=""),sep=",",header=TRUE)
+  DT <- as.data.table(right_data)
+  right_data<-DT[ (as.numeric(as.character(tes2_right_range$st)) <= time) & (time <= as.numeric(as.character(tes2_right_range$end))) ]
+  right_scr_info <- subset(tes2_right, subset=(tes2_right$data_type == "log"))
+  sum_data<-getLabeledData(right_data,right_scr_info,paste("s",sub_n,"_right_scr_",cdate,sep=""))
+  write.csv(sum_data, file=paste("./subject_data/p",sub_n,"_gold/subject",sub_n,"_right_",cdate,".csv",sep=""), row.names=F)
+  remove(right_data)
+  remove(DT)
+  gc()
+
+  
+  tes2_left <- subset(tes2, subset=(tes2$watch == "left"))
+  tes2_left_range<- subset(tes2_left, subset=(tes2_left$data_type == "meta"))
+  left_data <- read.table(paste("./subject_data/p",sub_n,"_silver/watch1_sensor_data.txt",sep=""),sep=",",header=TRUE)
+  DT <- as.data.table(left_data)
+
+  left_data<-DT[ (as.numeric(as.character(tes2_left_range$st)) <= time) & (time <= as.numeric(as.character(tes2_left_range$end))) ]
+  left_scr_info <- subset(tes2_left, subset=(tes2_left$data_type == "log"))
+  sum_data<-getLabeledData(left_data,left_scr_info,paste("s",sub_n,"_left_scr_",cdate,sep=""))
+  write.csv(sum_data, file=paste("./subject_data/p",sub_n,"_silver/subject",sub_n,"_left_",cdate,".csv",sep=""), row.names=F)
+  remove(left_data)
+  remove(DT)
+  gc()
+}
 
 
 
 View(sum_data)
+remove(sum_data)
 
 
-getLabeledData<-function(raw_data, label_info, title , threshold = 0.05)
+getLabeledData<-function(raw_data, label_info, title , threshold = 0.01)
 {
   for(i in c(3,8))
   {
@@ -151,14 +263,329 @@ s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data08024v2.csv",header=TRU
 s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data08024v2.csv",header=TRUE)
 s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data08024v2.csv",header=TRUE)
 
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data08024v3.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data08024v3.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data08024v3.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data08024v3.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0826v3.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0826.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0826.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0826csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0826_final.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0826_final.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0826_final.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0826_final.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0826_final_nofilter.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0826_final_nofilter.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0826_final_nofilter.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0826_final_nofilter.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0826_final_nofilter_step1.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0826_final_nofilter_step1.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0826_final_step1.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0826_final_nofilter_step1.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0826_final_nofilter2.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0826_final_nofilter2.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0826_final_nofilter2.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0826_final_nofilter2.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0826_final_nofilter3.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0826_final_nofilter3.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0826_final_nofilter3.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0826_final_nofilter3.csv",header=TRUE)
+
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0828_butterworth0.8_12.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0828_butterworth0.8_12.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0828_butterworth0.8_12.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0828_butterworth0.8_12.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0828_butterworth0.8_12_smooth.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0828_butterworth0.8_12_smooth.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0828_butterworth0.8_12_smooth.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0828_butterworth0.8_12_smooth.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0828_butterworth0_12_mag.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0828_butterworth0_12_mag.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0828_butterworth0_12_mag.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0828_butterworth0_12_mag.csv",header=TRUE)
+
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0828_butterworth0_12_PC.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0828_butterworth0_12_PC.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0828_butterworth0_12_PC.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0828_butterworth0_12_PC.csv",header=TRUE)
+
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_data0828_butterworth0_12_rot.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_data0828_butterworth0_12_rot.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_data0828_butterworth0_12_rot.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_data0828_butterworth0_12_rot.csv",header=TRUE)
+
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_0905_PCA3D.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_0905_PCA3D.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_0905_PCA3D.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_0905_PCA3D.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_0906_PCA3D.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_0906_PCA3D.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_0906_PCA3D.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_0906_PCA3D.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./data_csv/p3/subject3_left_0910.csv",header=TRUE)
+s3_right_csv<-read.csv("./data_csv/p3/subject3_right_0910.csv",header=TRUE)
+s2_left_csv<-read.csv("./data_csv/p2/subject2_left_0910.csv",header=TRUE)
+s2_right_csv<-read.csv("./data_csv/p2/subject2_right_0910.csv",header=TRUE)
+
+s3_left_csv<-read.csv("./subject_data/p3_gold/subject3_right_915.csv",header=TRUE)
+s3_right_csv<-read.csv("./subject_data/p3_silver/subject3_left_915.csv",header=TRUE)
+s2_left_csv<-read.csv("./subject_data/p2_gold/subject2_right_915.csv",header=TRUE)
+s2_right_csv<-read.csv("./subject_data/p2_silver/subject2_left_915.csv",header=TRUE)
+
+
+s4_right_csv <- read.csv("./subject_data/p4_gold//subject4_right_0912.csv",header=TRUE)
+
+s8_right_csv <- read.csv("./subject_data/p8_gold/subject8_right_0913.csv",header=TRUE)
+s8_left_csv <- read.csv("./subject_data/p8_silver/subject8_left_0913.csv",header=TRUE)
+
+s8_right_csv <- read.csv("./subject_data/extracted/subject8_left_915.csv",header=TRUE)
+s8_left_csv <- read.csv("./subject_data/extracted/subject8_right_915.csv",header=TRUE)
+
+###
+
+hist(temp)
+
+
+csv_data <- s2_left_csv
+csv_data <- s2_right_csv
+csv_data <- s3_left_csv
+csv_data <- s3_right_csv
+csv_data <- s4_right_csv
+csv_data <- s8_right_csv
+csv_data <- s8_left_csv
+#temp <- csv_data$Linearaccel_var_x.PC./csv_data$Linearaccel_var_y.PC.
+
+test_data$X<-NULL
+View(test_data)
+csv_data <- test_data
+csv_data <- as.data.frame(csv_data)
+
+View(csv_data)
+hist(temp)
+#length(temp)
+#View( csv_data[1,c(1+3,(267+3):(302+3),(379+3):(414+3))])
+View(csv_data[c(1+3,(72+3):(83+3),(282+3):(293+3))])
+
+View(csv_data[c(1+3,(212+3):(221+3),(282+3):(293+3))])
+
+
+i<-1
+
+predicted_label<-list()
+temp <- csv_data$Linearaccel_variance_avg.PC_x./((csv_data$Linearaccel_variance_avg.PC_y. + csv_data$Linearaccel_variance_avg.PC_z.)/2)  
+#temp <- csv_data$Linearaccel_variance_avg.PC_x./((csv_data$Linearaccel_variance_avg.PC_y.))
+for(i in 1:length(temp))
+{
+#  print(i)
+#  if(temp[i]>1){
+    
+  
+  #predicted_label$model2_pred[i] <- predict(sim_3Dmodel2, csv_data[i, c(1,(92+3):(127+3), (302+3):(337+3))])
+  
+  #  predicted_label$model_combined[i] <- predict(sim_3Dmodel2, csv_data[i, c(1+3,(152+3):(187+3),(362+3):(397+3))])
+#    predicted_label$model2_pred[i] <- predict(sim_3Dmodel2, csv_data[i, c(1+3,(152+3):(187+3),(362+3):(397+3))])
+    
+#    predicted_label$model2_pred[i] <- predict(sim_3Dmodel2, csv_data[i, c(1+3,(92+3):(127+3),(302+3):(337+3))])
+    predicted_label$model2_pred[i] <- predict(sim_3Dmodel2, csv_data[i, c(1+3,(51+3):(56+3), (60+3):(65+3), (69+3):(71+3), (152+3):(187+3), (261+3):(266+3), (270+3):(275+3), (270+3):(281+3), (362+3):(397+3))])
+    
+    #predicted_label[i] <- predict(sim_3Dmodel2, csv_data[i,c(1+3,(267+3):(302+3),(379+3):(414+3))])
+#    print(paste("temp>2", csv_data$label[i]," / prediction ", predicted_label$model_combined[i]))    
+#  }else{
+    #predicted_label[i] <- predict(sim_1Dmodel1, csv_data[i, c(1+3,(2+3):(11+3),(72+3):(83+3),(212+3):(221+3),(282+3):(293+3))])
+#    predicted_label$model_combined[i] <- predict(sim_1Dmodel1, csv_data[i,c(1+3,(72+3):(83+3))])
+#predicted_label$model1_pred[i] <- predict(sim_1Dmodel1, csv_data[i,c(1+3,(72+3):(83+3))])
+
+    predicted_label$model1_pred[i] <- predict(sim_1Dmodel1, csv_data[i, c(1+3,(152+3):(187+3),(362+3):(397+3))])
+#    predicted_label$model1_pred[i] <- predict(sim_1Dmodel1, csv_data[i,c(1+3,5+3,6+3,8+3,9+3,11+3,(72+3):(83+3),215+3,216+3,218+3,219+3,221+3 )])
+
+    
+#    predicted_label[i] <- predict(sim_1Dmodel1, csv_data[i,c(1+3,(2+3):(13+3),(86+3):(97+3),(219+3):(230+3),(303+3):(314+3))])
+    #predicted_label[i] <- predict(sim_1Dmodel1, csv_data[i,c(1+3,(2+3):(13+3),(86+3):(97+3))])    
+#    print(paste("temp<=2", csv_data$label[i]," / prediction ", predicted_label$model_combined[i]))
+#  }
+    #print(paste("temp<=2", csv_data$label[i]," / prediction ", predicted_label[i]))
+    print(paste( csv_data$start_milli[i], csv_data$end_milli[i], csv_data$label[i],"temp(",temp[i],")", "temp>1", predicted_label$model2_pred[i], ", all ", predicted_label$model1_pred[i] ))
+        
+    if( (predicted_label$model1_pred[i] == 2) & (predicted_label$model2_pred[i] == 2) )
+      predicted_label$model_combined[i] <- 2
+    else if( (predicted_label$model1_pred[i] == 2) & (predicted_label$model2_pred[i] == 1) )
+      predicted_label$model_combined[i] <- 2
+    else if( (predicted_label$model1_pred[i] == 1) & (predicted_label$model2_pred[i] == 2) )
+      predicted_label$model_combined[i] <- 2
+    else if( (predicted_label$model1_pred[i] == 1) & (predicted_label$model2_pred[i] == 1) )
+      predicted_label$model_combined[i] <- 1
+
+#  }
+}
+#View(predicted_label)
+
+predicted_label$model1_pred <- factor(predicted_label$model1_pred,labels=c("non","scratch"))
+predicted_label$model2_pred <- factor(predicted_label$model2_pred,labels=c("non","scratch"))
+predicted_label$model_combined <- factor(predicted_label$model_combined,labels=c("non","scratch"))
+
+
+#View(predicted_label)
+#levels(predicted_label$model1_pred )
+#levels(csv_data$label)
+#predicted_label<-ordered(predicted_label, levels = c("non", "scratch"))
+confusionMatrix(predicted_label$model1_pred, csv_data$label)
+confusionMatrix(predicted_label$model2_pred, csv_data$label)
+confusionMatrix(predicted_label$model_combined, csv_data$label)
+
+
+
+
+View(sim_data0910_model1[c(1,72:83,282:293)]) # 1D gyro spacial features (mag)
+View(sim_data0910_model1[c(1,5,6,8,9,11, 215,216,218,219,221)]) # 1D gyro, accel features
+
+View(sim_data0910_model1[c(1,2:11,212:221)]) # 1D gyro time related features (max)
+train_control <- trainControl(method="repeatedcv", number=10)
+sim_1Dmodel1 <- train(label~., data=sim_data0910_model1[c(1,72:83)], trControl = train_control,  method="svmLinear")
+sim_1Dmodel1 <- train(label~., data=sim_data0910_model1[c(1,5,6,8,9,11,72:83,215,216,218,219,221 )], trControl = train_control,  method="svmLinear")
+sim_1Dmodel1 <- train(label~., data=sim_data0910_model1[c(1,152:190,362:400)], trControl = train_control,  method="svmLinear")
+
+sim_1Dmodel1
+
+#delay.model <- glm(label~., data=sim_data0910_model1[c(1,72:83)], control = list(maxit = 50))
+#delay.model
+
+
+
+View(sim_data0910_model2[c(1,51:53, 60:65, 69:71, 261:263, 270:275, 279:281)]) # 3D accel, gyro auto features
+View(sim_data0910_model2[c(1,152:187,362:397)]) # 3D accel, gyro auto features
+#View(combined.model2data[c(1,379:414)]) # 3D accel time related features 
+#sim_3Dmodel2 <- train(label~., data=sim_data0910_model2[c(1,5,6,8,9,11,152:187,215,216,218,219,221,362:397)], trControl = train_control,  method="svmLinear")
+sim_3Dmodel2 <- train(label~., data=sim_data0910_model2[c(1,51:56, 60:65, 69:71, 152:187, 261:266, 270:275, 270:281, 362:397)], trControl = train_control,  method="svmLinear")
+sim_3Dmodel2 <- train(label~., data=sim_data0910_model1[c(1,152:187,362:397)], trControl = train_control,  method="svmLinear")
+sim_3Dmodel2 <- train(label~., data=sim_data0910_model2[c(1,152:187,362:397)], trControl = train_control,  method="svmLinear")
+
+sim_3Dmodel2 <- train(label~., data=sim_data0910_model2[c(1,92:127,302:337)], trControl = train_control,  method="svmLinear")
+
+sim_3Dmodel2
+
+summary(sim_3Dmodel2)
+
+####
+
+test_model <- train(label~., data=sim_data0910_model1[c(1,92:127, 302:337)], trControl = train_control,  method="svmLinear")
+test_model <- train(label~., data=sim_data0910_model1[c(1,152:187, 362:397)], trControl = train_control,  method="svmLinear")
+test_model <- train(label~., data=sim_data0910_model2[c(1,152:187,362:397)], trControl = train_control,  method="svmLinear")
+test_model
+sim_3Dmodel2<-test_model
+
+
+########
+sim_1Dmodel1 
+sim_1Dmodel1
+
+sim_1Dmodel1 <- train(label~., data=combined.model1data[c(1,2:13,86:97)], trControl = train_control,  method="glm")
+sim_3Dmodel2 <- train(label~., data=combined.model2data[c(1,267:302,379:414)], trControl = train_control,  method="glm")
+
+
+
+##
+
+View(s3_left_csv)
+View(csv_data[c(4,53:64)])
+train_control <- trainControl(method="cv", number=10)
+View(sim_data[c(1,98:109)])
+model <- train(label~., data=sim_data[c(1,98:109)], trControl = train_control,  method="glm")
+predictions <- predict(model, sim_data[c(1,98:109)])
+
+View(csv_data[c(4,82:93)])
+
+
+
+
+confusionMatrix(predictions, sim_data$label)
+
+
+csv_data <- s2_left_csv
+csv_data <- s2_right_csv
+csv_data <- s3_left_csv
+csv_data <- s3_right_csv
+
+csv_data <- real_data
+
+csv_data$label <- factor(csv_data$label)
+
+View(csv_data[c(4,(267+3):(302+3))])
+csv_data$predicted_label <- predict(sim_model1, csv_data[c(4,(267+3):(302+3))])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+
+View(csv_data[c(4,(231+3):(266+3))])
+csv_data$predicted_label <- predict(sim_model1_noPCA, csv_data[c(4,(231+3):(266+3))])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+
+View(csv_data[c(4,(379+3):(414+3))])
+csv_data$predicted_label <- predict(auto_sim_model1_PCA, csv_data[c(4,(379+3):(414+3))])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+
+View(csv_data[c(4,(303+3):(314+3))])
+csv_data$predicted_label <- predict(auto_sim_model1_max, csv_data[c(4,(303+3):(314+3))])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+
+View(csv_data[c(4,(50+3):(85+3))])
+csv_data$predicted_label <- predict(sim_model1_gyro, csv_data[c(4,(50+3):(85+3))])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+
+View(csv_data[c(4,(86+3):(97+3))])
+csv_data$predicted_label <- predict(auto_sim_model1_PCA_gyro, csv_data[c(4,(86+3):(97+3))])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+ 
+
+csv_data$predicted_label <- predict(sim_model1, csv_data[c(4,53:64)])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+
+
+csv_data$predicted_label <- predict(sim_model1_auto, csv_data[c(4,82:93)])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+
+csv_data$predicted_label <- predict(sim_model1_auto_g, csv_data[c(4,53:64,82:93)])
+confusionMatrix(csv_data$predicted_label, csv_data$label)
+
+write.csv(csv_data, "./data_csv/predicted_result_s2_rightGLM_auto_g.csv")
+
+
+
 
 View(s2_left_csv)
+############
+
+
 
 real_data<-rbind(s3_left_csv, s3_right_csv)
+#real_data<-rbind(real_data, s8_right_csv)
+#real_data<-rbind(real_data, s8_left_csv)
+real_data<-rbind(s8_left_csv, s8_right_csv)
+
 real_data<-rbind(real_data, s2_left_csv)
 real_data<-rbind(real_data, s2_right_csv)
+real_data$var_th <-  real_data$Linearaccel_variance_avg.PC_x./((real_data$Linearaccel_variance_avg.PC_y.))
+hist(real_data$var_th, breaks = c(0,seq(0,15,0.5)), ylim = c(0,1))
 real_data$epoches<-NULL
 real_data$start_milli<-NULL; real_data$end_milli<-NULL;
+rownames(real_data) <- NULL;
+nrow(real_data)
+
+real_data<-real_data[which((real_data$var_th < 1)),]
+real_data<-real_data[which((real_data$var_th >= 1)),]
+
 
 View(real_data)
 t<-subset(real_data, subset=(real_data$label == "scratch"))
@@ -191,13 +618,52 @@ write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08018.arff"
 write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08019.arff",sep=""), relation = "real_0819_scr_nonscr")
 write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08024.arff",sep=""), relation = "real_0824_scr_nonscr")
 write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08024v2.arff",sep=""), relation = "real_0824v2_scr_nonscr")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08024v3.arff",sep=""), relation = "real_0824v3_scr_nonscr")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08026.arff",sep=""), relation = "real_0826_scr_nonscr")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08026_2.arff",sep=""), relation = "real_0826_2_scr_nonscr")
+write.arff(real_data, file=paste("./data_csv/real_data_fair_data08026_3.arff",sep=""), relation = "real_0826_3_scr_nonscr")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08026_final.arff",sep=""), relation = "real_0826_FINAL_scr_nonscr")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08026_final_nofilter.arff",sep=""), relation = "real_0826_FINAL_nofilter_scr_nonscr")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08026_final_step1.arff",sep=""), relation = "real_0826_FINAL_step1_scr_nonscr")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08026_final_nofilter2.arff",sep=""), relation = "real_0826_FINAL_nofilter2_scr_nonscr")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08026_final_nofilter3.arff",sep=""), relation = "real_0826_FINAL_nofilter3_scr_nonscr")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08028_butterworth0.8_12.arff",sep=""), relation = "real_0828_butterworth0.8_12")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08028_butterworth0.8_12_smooth.arff",sep=""), relation = "real_0828_butterworth0.8_12_smooth")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08028_butterworth0_12_mag.arff",sep=""), relation = "real_0828_butterworth012mag")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08028_butterworth0_12_PC.arff",sep=""), relation = "real_0828_butterworth012PC")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data08028_butterworth0_12_rot.arff",sep=""), relation = "real_0828_butterworth012rot")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0905_PCA3D.arff",sep=""), relation = "real_0905_PCA3D")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0911_model1.arff",sep=""), relation = "real_0911_model1")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0911_model2.arff",sep=""), relation = "real_0911_model2")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0913_3Dmodel2.arff",sep=""), relation = "real_0913_3Dmodel2")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0913_only_1Dmodel1.arff",sep=""), relation = "real_0913_1Dmodel1")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0913_3Dmodel2_th2.arff",sep=""), relation = "real_0913_3Dmodel2+th2")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0913_3Dmodel2_th1_xy.arff",sep=""), relation = "real_0913_3Dmodel2_th1_xy")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0913_1Dmodel1_th1_xy.arff",sep=""), relation = "real_0913_1Dmodel1_th1_xy")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0915_1Dmodel1_th1_xy.arff",sep=""), relation = "real_0915_1Dmodel1_th1_xy")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0915_3Dmodel2_th1_xy.arff",sep=""), relation = "real_0915_3Dmodel2_th1_xy")
+
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0915_allS2S3.arff",sep=""), relation = "real_0915_allS2S3")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0910_allS2S3.arff",sep=""), relation = "real_0910_allS2S3")
+
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0918_s8.arff",sep=""), relation = "real_0918_s8")
+write.arff(real_data_fair, file=paste("./data_csv/real_data_fair_data0918_s8_pre.arff",sep=""), relation = "real_0918_s8_pre")
 
 
 
 s3_left_scr_info <- read.csv("./data_raw/p3/subject3_left_scratch.csv",header=TRUE)
 s3_right_scr_info <- read.csv("./data_raw/p3/subject3_right_scratch.csv",header=TRUE)
 
-isScratchIn <- function (startTime, endTime, scr_info)
+isScratchIn <- function (startTime, endTime, scr_info, limit_t=3000)
 {
   #window_size_milli <- (window_size/50)*1000
   #print(paste("startTime",startTime))
@@ -210,7 +676,7 @@ isScratchIn <- function (startTime, endTime, scr_info)
   {
     scrS <- as.integer(scr_info$scr_start[i])
     scrE <- as.integer(scr_info$scr_end[i])
-    if(scrE - scrS < 3000){
+    if(scrE - scrS < limit_t){
       next
     }
     
@@ -667,7 +1133,11 @@ doSimulationAllFeaturesWithLabeling <- function(data, cut, idx, window_size, win
              getFeatureBy(window_df,"powerband",avg=TRUE,powerband_from = 22.5,powerband_to = 25, type="PC"),
              getFeatureBy(window_df,"peaknumAutoSum",avg=TRUE,type="PC",filtering = TRUE),
              getFeatureBy(window_df,"prominentAutoSum",avg=TRUE,type="PC",filtering = TRUE),
-             getFeatureBy(window_df,"weakpeakAutoSum",avg=TRUE,type="PC",filtering = TRUE)
+             getFeatureBy(window_df,"weakpeakAutoSum",avg=TRUE,type="PC",filtering = TRUE),
+             
+             
+             
+             
              
       )
       

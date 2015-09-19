@@ -28,8 +28,9 @@ getAutocorrelation <- function(data, lag)
   {
     sum <- sum + (data[i]-u)*(data[i+lag]-u)
   }
+  
   sum2 <- 0
-  for(i in 1:N)
+  for(i in 1:(N))
   {
     sum2 <- sum2 + (data[i]-u)^2
   }
@@ -149,7 +150,7 @@ getFirstHeightBy <- function(signal, type="peaks")
   {
     p <- findPeaks(signal)
     p <- p - 1
-    maxV <- 0
+    maxV <- -9999999999
     if(length(p)==0)
       return(0)
     
@@ -171,12 +172,59 @@ getFirstHeightBy <- function(signal, type="peaks")
         minV <- signal[p2[i]]
     }
     
-    resValue <- maxV - minV
+    resValue <- abs(maxV) + abs(minV)
   }
   #print(paste("resValue",resValue))
   
   return(abs(resValue))
 }
+
+
+getAmplitudeBins <- function(signal, type ="strong")
+{
+  sumS<-0
+  if(type=="strong")
+  {
+    for(i in 1:length(signal))
+    {
+      if(abs(signal[i]) >= 0.5)
+        sumS<- sumS + abs(signal[i])
+    }
+  }
+  
+  else if(type=="weak")
+  {
+    for(i in 1:length(signal))
+    {
+      if(abs(signal[i]) < 0.5)
+        sumS<- sumS + abs(signal[i])
+    }
+  }
+  
+  return(sumS)
+}
+
+
+getLagBins <- function(signal, from, to)
+{
+  if(length(signal)<to)
+  {
+    print(paste("length error", length(signal), from, to))
+    to <- length(signal)
+  }
+  
+  signal.sub <- signal[from:to]
+  sumS <- 0
+ 
+  for(i in 1:length(signal.sub))
+  {
+    sumS<- sumS + abs(signal.sub[i])
+  }
+  
+  return(sumS)
+}
+
+
 
 
 
@@ -344,58 +392,81 @@ createSignalcomparison <- function(data, idx, setbtw=FALSE, start_milli=0.1, end
 }
 
 
-getSpacing <- function(pvlist, data, time)
-{
-  peaklist<-1
-  for(i in 2:length(pvlist))
-  {
-    #print(paste("i-",i,"peak-",data[pvlist[i-1]-1],sep=""))
-    #print(paste("spacing - ", time[pvlist[i]-1] - time[pvlist[i-1]-1] ))
-    peaklist[i-1] <- time[pvlist[i]-1] - time[pvlist[i-1]-1]
-  }
-#  print(peaklist)
-  return(peaklist)
-}
 
-
-getMaxidx<- function(px, signal)
+getMaxidx<- function(px, signal, type="peak")
 {
-  max<--10000000000
-  maxidx<-0
-  if(length(px)==0)
-    return(-1)
-  for(i in 1:length(px)){
-    if(signal[px[i]-1] > max)
-    {
-      max <- signal[px[i]-1]
-      maxidx <- (px[i]-1)
+  if(type=="peak"){
+    max<- -10000000000
+    idx<-0
+    if(length(px)==0)
+      return(-1)
+    for(i in 1:length(px)){
+      if(signal[px[i]-1] > max)
+      {
+        max <- signal[px[i]-1]
+        idx <- (px[i]-1)
+      }
     }
   }
   
-  return(maxidx)
+  else if(type=="valley"){
+    min<- 10000000000
+    idx<-0
+    if(length(px)==0)
+      return(-1)
+    for(i in 1:length(px)){
+      if(signal[px[i]-1] < min)
+      {
+        min <- signal[px[i]-1]
+        idx <- (px[i]-1)
+      }
+    }
+  }
+  
+  return(idx)
 }
+
+getPeakValleyIdx<-function(signal, thresh)
+{
+  px <- findValleys(signal, thresh = thresh)
+  px2 <- findPeaks(signal, thresh = thresh)
+  res <- c(px,px2)
+#  print(px)
+#  print(px2)
+#  print("--")
+#  print(sort(res))
+  
+  return (sort(res))
+}
+
 
 getRemainder <- function(signal,  time, thresh = 0,  alpha = 0.15)
 {
-  px <- findPeaks(signal, thresh = thresh)
+  px <- getPeakValleyIdx(signal, thresh)
+  selected<-1
   #print(px)
-  if(length(px)==0){
-    print("px==0")
+  if(length(px)<=2){
+    #print(paste("px<=2", length(px), "thresh", thresh))
     selected[1] <- FALSE
     return(selected)
   }
   #print(paste("len -px",length(px)))
   
   
-  maxidx <- getMaxidx(px, signal)
-  t1 <- time[maxidx]
+  idx <- getMaxidx(px, signal, "valley")
+  t1 <- time[idx]
+  if(idx >50){
+    #print(paste("idx>50", time[idx]))
+    selected[1] <- FALSE
+    return(selected)
+  }
   #print(paste("maxidx", maxidx, " t1 ", t1))
-
+  
   selected <- -99
   selected[1] <- -99
   
-
-
+  
+  
   idx <- 1
   for(i in 1:length(px))
   {
@@ -404,53 +475,63 @@ getRemainder <- function(signal,  time, thresh = 0,  alpha = 0.15)
     #print(paste("res ",re, " v ",v," t1 ",t1))
     #print(paste(" [ ", t1*alpha, ", ", t1*(1-alpha), " ] "))
     if( (t1*alpha < re) & (re < t1*(1-alpha) ) ) {
+      #      selected[idx] <- px[i]-1
+      #      idx <- idx + 1
+      #print(paste("yes v-",v))
+    } else {
       selected[idx] <- px[i]-1
       idx <- idx + 1
-      #print(paste("yes v-",v))
-  } else{
       #print(paste("no v-",v))
     }
-  
+    
   }
   
- # print(paste("selected", selected[1]))
+  # print(paste("selected", selected[1]))
   return(selected)
 }
 
-getHarm <- function(signal, time, thresh = 0, alpha = 0.15, beta = 1/(10000*10) )
+
+
+getHarm <- function(signal, time, thresh = 0.001, alpha = 0.20, beta = 1/(10000*1000) )
 {
   #print(paste("signal len",length(signal),"time len", length(time)))
   time <- time - time[1]
-
-#  print(time[px-1])
+  
+  #  print(time[px-1])
   remainder <- getRemainder(signal, time, thresh, alpha)
-
+  
   if(remainder[1]==FALSE){
     return (0)
   }
   else if(remainder[1] == -99){
-      signal_sum <- 0; r0 <-1;      
+    signal_sum <- 0; r0 <-1;      
   }
   else{
-    px <- findPeaks(signal, thresh = thresh)
+    px <- getPeakValleyIdx(signal, thresh = thresh)
     #print(px)
-    maxidx <- getMaxidx(px, signal)
-    t1 <- time[maxidx]
+    idx <- getMaxidx(px, signal, "valley")
+    t1 <- time[idx]
     #print("remainder")
     #print(remainder)
     #print(signal[remainder])
-    r0 <- t1
+    #r0 <- t1
     #print(paste("t1",r0))
-    #r0 <- sum(signal[px-1])
+    #print("signal===========")
+    #print(signal[px-1])
+    
+    r0 <- sum(abs(signal[px-1]))
     signal_sum <- sum(abs(signal[remainder]))
     #print(signal[remainder])
+    #print("=================")
+    #print(signal[remainder])
     #print(paste(r0, signal_sum))
-  }  
- 
+  }
   
-  return ( exp(-1/beta*(signal_sum/r0)) )
+  
+  #  return ( exp(-1/beta*(signal_sum/r0)) )
+  
+  return (signal_sum)
 }
-
 
 
 
@@ -465,30 +546,45 @@ getVarPeakSpacing <- function(signal, time, thresh = 0)
 
 getVarPeakSpacing <- function(signal, time, thresh = 0)
 {
-  px <- findPeaks(signal,thresh = thresh)
+  px <- getPeakValleyIdx(signal, thresh = thresh)
   peaklist<-getSpacing(px, signal, time)
   #  print(paste("variance", var(peaklist)))
   
   return (var(peaklist))
 }
 
-getVarValleySpacing <- function(signal, time, thresh = 0)
+getSDPeakValleySpacing <- function(signal, time, thresh = 0)
 {
   px <- findValleys(signal,thresh = thresh)
   peaklist<-getSpacing(px,signal,time)
   #  print(paste("variance", var(peaklist)))
   
-  return (var(peaklist))
+  return (sd(peaklist))
 }
+
+
+getSpacing <- function(pvlist, data, time)
+{
+  peaklist<-1
+  for(i in 2:length(pvlist))
+  {
+    #print(paste("i-",i,"peak-",data[pvlist[i-1]-1],sep=""))
+    #print(paste("spacing - ", time[pvlist[i]-1] - time[pvlist[i-1]-1] ))
+    peaklist[i-1] <- time[pvlist[i]-1] - time[pvlist[i-1]-1]
+  }
+  #  print(peaklist)
+  return(peaklist)
+}
+
 
 #print(paste("variance", var(peaklist)))
 
 
 createAutocorrelationSignal <- function(data, idx, startLag,
                                         setbtw=FALSE, start_milli=0.1, end_milli=0.1, avg=FALSE, type="mag", # mag, PC
-                                        filter_num = 1, spanV = 0.1,
+                                        filter_num = 1, spanV = 0.1,thresh = 0,
                                         graph_title="noname",threshold = 0,peak_threshold=0, filtering =TRUE,
-                                        f_l = 10, samplingrate=50)
+                                        f_l = 12, bf_f_l = 1,  samplingrate=50,after_filtering=FALSE, after_filter_num =3 )
 {
   data.sub <- subset(data, grepl(list[idx], data$type))
   
@@ -498,14 +594,21 @@ createAutocorrelationSignal <- function(data, idx, startLag,
     data.sub <- subset(data.sub, subset=(data.sub$time > start_milli ))
   }
   
-  res <- createPlot( data.sub, idx, "raw_data", FALSE, "0810")
-  print(res)
+#  res <- createPlot( data.sub, idx, "raw_data", FALSE, "0810")
+#  print(res)
   #bf <- butter(2, frequency, type=frtype)
   if(filtering & (filter_num == 1) ){
     bf2 <- butter(1, (2*f_l)/(samplingrate), type="low")
+   # bf3 <- butter(1, (2*bf_f_l)/(samplingrate), type="high")
+    
     data.sub$x <- filtfilt( bf2, data.sub$x)
     data.sub$y <- filtfilt( bf2, data.sub$y)
     data.sub$z <- filtfilt( bf2, data.sub$z) 
+    
+  #  data.sub$x <- filtfilt( bf3, data.sub$x)
+   # data.sub$y <- filtfilt( bf3, data.sub$y)
+  #  data.sub$z <- filtfilt( bf3, data.sub$z) 
+    
   }else if(filtering & (filter_num == 2))
   {
     df <- data.frame(time_hour = data.sub$time, x = data.sub$x, y = data.sub$y, z = data.sub$z )
@@ -534,8 +637,8 @@ createAutocorrelationSignal <- function(data, idx, startLag,
     
   }
   
-  res<-createPlot( data.sub, idx, paste("butterworth_", f_l,sep=""), FALSE, "0810")
-  print(res)
+#  res<-createPlot( data.sub, idx, paste("butterworth_", f_l,sep=""), FALSE, "0810")
+#  print(res)
 #  createFrequencyBy(data.sub$x, "x-axis(raw)")
 #  createFrequencyBy(data.sub$y, "y-axis(raw)")
 #  createFrequencyBy(data.sub$z, "z-axis(raw)")
@@ -546,16 +649,32 @@ createAutocorrelationSignal <- function(data, idx, startLag,
     signal_y <- getAutocorrelationSignal(data.sub$y, startLag)
     signal_z <- getAutocorrelationSignal(data.sub$z, startLag)
 
+    if(after_filtering & (after_filter_num == 3))
+    {
+      df <- data.frame(time_hour = data.sub$time, x = signal_x, y = signal_y, z = signal_z )
+      sx <- predict(smooth.spline(df$time_hour, df$x, spar = spanV), df$time_hour, cv = T)
+      sy <- predict(smooth.spline(df$time_hour, df$y, spar = spanV), df$time_hour, cv = T)
+      sz <- predict(smooth.spline(df$time_hour, df$z, spar = spanV), df$time_hour, cv = T)
+      print(paste("x spar ", smooth.spline(df$time_hour, df$x, cv=T)$spar ))
+      print(paste("y spar ", smooth.spline(df$time_hour, df$y, cv=T)$spar ))
+      print(paste("z spar ", smooth.spline(df$time_hour, df$z, cv=T)$spar ))
+      
+      signal_x <- sx$y
+      signal_y <- sy$y
+      signal_z <- sz$y
+    }
+    
+    
 #    createFrequencyBy(signal_x, "x-axis(auto-cor)")
 #    createFrequencyBy(signal_y, "y-axis(auto-cor)")
 #    createFrequencyBy(signal_z, "z-axis(auto-cor)")
     
-    px <- findPeaks(signal_x,thresh = 0)
-    vx <- findValleys(signal_x,thresh = 0)
-    py <- findPeaks(signal_y,thresh = 0.01)
-    vy <- findValleys(signal_y,thresh = 0.01)
-    pz <- findPeaks(signal_z,thresh = 0.01)
-    vz <- findValleys(signal_z,thresh = 0.01)  
+    px <- findPeaks(signal_x,thresh = thresh)
+    vx <- findValleys(signal_x,thresh = thresh)
+    py <- findPeaks(signal_y,thresh = thresh)
+    vy <- findValleys(signal_y,thresh = thresh)
+    pz <- findPeaks(signal_z,thresh = thresh)
+    vz <- findValleys(signal_z,thresh = thresh)  
     
     raw_x_len <- length(findPeaks(signal_x,thresh = 0)) + length(findValleys(signal_x,thresh = 0))
     th_x_len <- length(findPeaks(signal_x,thresh = threshold)) + length(findValleys(signal_x,thresh = threshold))
@@ -618,11 +737,11 @@ createAutocorrelationSignal <- function(data, idx, startLag,
     returnValue <- returnValue + geom_vline(xintercept = df$time[px-1], alpha=1, colour="red",linetype=1)
     returnValue <- returnValue + geom_vline(xintercept = df$time[vx-1], alpha=1, colour="red",linetype=1)
     
-#    returnValue <- returnValue + geom_vline(xintercept = df$time[py-1], alpha=1, colour="blue",linetype=1)
-#    returnValue <- returnValue + geom_vline(xintercept = df$time[vy-1], alpha=1, colour="blue",linetype=1)
+    returnValue <- returnValue + geom_vline(xintercept = df$time[py-1], alpha=1, colour="blue",linetype=1)
+    returnValue <- returnValue + geom_vline(xintercept = df$time[vy-1], alpha=1, colour="blue",linetype=1)
     
-#    returnValue <- returnValue + geom_vline(xintercept = df$time[pz-1], alpha=1, colour="yellow",linetype=1)
-#    returnValue <- returnValue + geom_vline(xintercept = df$time[vz-1], alpha=1, colour="yellow",linetype=1)
+    returnValue <- returnValue + geom_vline(xintercept = df$time[pz-1], alpha=1, colour="yellow",linetype=1)
+    returnValue <- returnValue + geom_vline(xintercept = df$time[vz-1], alpha=1, colour="yellow",linetype=1)
     
   }else{
     
@@ -744,8 +863,8 @@ createHeatmapByFeature("test",sim_test_data, 8, 150, 50, FALSE, FALSE, 0, 15000,
 createHeatmapByFeature <- function(graph_title, data, idx, window_size, window_step, 
                                    cut=TRUE, set_btw=FALSE, start_milli=1.1, end_milli=1.1, x_type="time", 
                                    signal_type = "heatmap", thresholdvar = 0.1, forcedlen = FALSE,
-                                   filter_num = 1 , spanV = 0.3, filtering2 = FALSE,
-                                   filtering =FALSE, f_l=10, sampling.rate = 50, options ="no", filter_type = "low", order = 1)
+                                   filter_num = 1 , spanV = 0.3, filtering2 = FALSE,rotationBy=FALSE,thresh = 0.95,
+                                   filtering =FALSE, f_l=12, bf_f_l=1,sampling.rate = 50, options ="no", filter_type = "low", order = 1)
 {
   
   data.sub <- subset(data,grepl(list[idx], data$type))
@@ -796,14 +915,26 @@ createHeatmapByFeature <- function(graph_title, data, idx, window_size, window_s
       window_data <- getWindow(data.sub,window_idx,window_size)
       magnitude <- sqrt( (window_data$x+50)^2+(window_data$y+50)^2+(window_data$z+50)^2)
       magnitude <- magnitude - mean(magnitude)
-      
+      #tmp<-window_data
+      #View(tmp)
       if(var(magnitude)>thresholdvar){
         
+  
+        
+#        View(window_data)
+        
+        
         if(filtering & (filter_num == 1)){
-          bf2 <- butter(order, (2*f_l)/(sampling.rate), type=filter_type)
-          window_data$x <- filtfilt( bf2, window_data$x)
-          window_data$y <- filtfilt( bf2, window_data$y)
-          window_data$z <- filtfilt( bf2, window_data$z)
+          bf2 <- butter(order, (2*f_l)/(sampling.rate), type="low")
+       #   bf3 <- butter(order, (2*bf_f_l)/(sampling.rate), type="high")
+          
+          window_data$x <- filtfilt( bf2, window_data$x )
+          window_data$y <- filtfilt( bf2, window_data$y )
+          window_data$z <- filtfilt( bf2, window_data$z )
+          
+      #    window_data$x <- filtfilt( bf3, window_data$x)
+      #    window_data$y <- filtfilt( bf3, window_data$y)
+      #    window_data$z <- filtfilt( bf3, window_data$z)
         }else if(filtering & (filter_num == 2))
         {
           df <- data.frame(time_hour = window_data$time, x = window_data$x, y = window_data$y, z = window_data$z )
@@ -829,7 +960,31 @@ createHeatmapByFeature <- function(graph_title, data, idx, window_size, window_s
           window_data$x <- movingAverage(df$x, spanV, TRUE)
           window_data$y <- movingAverage(df$y, spanV, TRUE)
           window_data$z <- movingAverage(df$z, spanV, TRUE)
+        }
+      
+        if(rotationBy){
+          trans <- preProcess(window_data[,3:5], method=c("BoxCox", "center", "scale", "pca"), thresh = thresh)
+          PC <- predict(trans, window_data[,3:5])
           
+          #          temp_m<-list()
+          #          for(i2 in 1:length(window_data$x)){
+          #            temp <-  c(window_data$x[i2], window_data$y[i2], window_data$z[i2]) %*%  trans$rotation 
+          #            temp_m$x[i2] <- temp[1]
+          #            temp_m$y[i2] <- temp[2]
+          #            temp_m$z[i2] <- temp[3]
+          #print(i)
+          #          }
+          
+          window_data$x <- as.numeric(PC$PC1)
+          window_data$y <- as.numeric(PC$PC2)
+          window_data$z <- as.numeric(PC$PC3)
+          
+          bf2 <- butter(order, (2*f_l)/(sampling.rate), type="low")
+          #   bf3 <- butter(order, (2*bf_f_l)/(sampling.rate), type="high")
+          
+          window_data$x <- filtfilt( bf2, window_data$x )
+          window_data$y <- filtfilt( bf2, window_data$y )
+          window_data$z <- filtfilt( bf2, window_data$z )
         }
         
         #print(length(window_data$x))
@@ -841,7 +996,7 @@ createHeatmapByFeature <- function(graph_title, data, idx, window_size, window_s
           data_feature$y[i] <- signal_y
           data_feature$z[i] <- signal_z         
 
-        }else if(signal_type =="cepstrum"){         
+        }else if(signal_type =="cepstrum"){        
           data_feature$x[i] <- as.double(ifft(log(abs(fft(window_data$x)))))[k+1]
           data_feature$y[i] <- as.double(ifft(log(abs(fft(window_data$y)))))[k+1]
           data_feature$z[i] <- as.double(ifft(log(abs(fft(window_data$z)))))[k+1]         
