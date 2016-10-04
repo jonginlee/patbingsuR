@@ -1,500 +1,21 @@
-
-#max<-0
-#maxi<-0
-#http://www.abecedarical.com/zenosamples/zs_complexnumbers.html
-
-Px = trans_to_frequency(data.sub$x - mean(data.sub$x))
-data <- data.sub$x - mean(data.sub$x)
-
-
-
-getPowerBandBy <- function(data, from, to, sampling.rate = 50)
-{
-  avgV = trans_to_frequency(data)
-  
-  n = length(data)
-  #sampling.rate = 50 
-  nUniquePts <- ceiling((n+1)/2)
-  freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
-  
-  sum <- 0
-  for(i in 1:length(freqArray))
-  {
-    if( (from < freqArray[i]) & (freqArray[i] <= to) ){
-      #print(paste("i",i))
-      sum <- sum + avgV[i]
-    }
-    
-    if(freqArray[i] > to)
-      break
-  }
-  return(sum)
-}
-]
-
-
-createFrequencyBy <- function(adata,graph_title="no")
-{
-  Px <- trans_to_frequency(adata - mean(adata))
-  n = length(adata)
-  sampling.rate = 50
-  nUniquePts <- ceiling((n+1)/2)
-  freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
-  df <- data.frame(fre = freqArray, perX = Px)
-  getPeakRatioFeature(df$perX,df$fre, 0.005,1,TRUE,title=graph_title) 
-}
-
-getPeakRatioFeature<-function(power, freq, cutoff=0.005, type=1, ploting=FALSE, title="no",  neigh_th = 0, min_th = 0)
-{
-  
-  cutoff<-0.0005
-  p <- findPeaks(power,thresh = neigh_th)
-  p <- p-1
-  maxV <- 0
-  maxP <- -1
-  #View(power)
-  #View(p)
-  if(length(p)!=0)
-  {
-    for(i in 1:length(p))
-    {
-      if(power[p[i]]>maxV){
-        maxP <- p[i]
-        maxV <- power[p[i]]
-      }
-    }
-  }
-  
-  minThreshold <- as.double(maxV)*0.9
-  cntDominant <- 0;
-  #print(paste("minTh",minThreshold))
-  
-#  if((maxP>=0) & (length(p)!=0) )
-#  {
-#    for(i in 1:length(p))
-#    {
-#      if( (power[p[i]] > 0) & (power[p[i]]>minThreshold) ){
-#        cntDominant <- cntDominant + 1
-#      }
-#    }
-#  }
-  testsum <- 0
-  if(length(p) == 0){
-   # print("her")
-  }else{
-  
-  #  print(freq)
-  for(i in 1:length(p))
-    {
-      if((freq[p[i]] > 1) & (freq[p[i]] <= 5) & (power[p[i]] > min_th) )
-      {
-        cntDominant <- cntDominant + 1
-        testsum <- testsum + power[p[i]]
-      }
-    }
-  }
-
-  cntWeak <- length(p) - cntDominant
-
-#  print(paste("prominant",cntDominant,"testsum",testsum, "cntWeak",cntWeak ))
-  
-
-  if(maxP>=0){
-    if(freq[maxP-1]==0){
-      rect <- data.frame(xmin=freq[maxP-1], xmax=freq[maxP+2], ymin=-Inf, ymax=Inf)
-      x <- c(freq[maxP-1], freq[maxP], freq[maxP+1], freq[maxP+2])
-      y <- c(power[maxP-1], power[maxP], power[maxP+1], power[maxP+2])
-    }else{
-      rect <- data.frame(xmin=freq[maxP-2], xmax=freq[maxP+2], ymin=-Inf, ymax=Inf)
-      x <- c(freq[maxP-2], freq[maxP-1], freq[maxP], freq[maxP+1], freq[maxP+2])
-      y <- c(power[maxP-2], power[maxP-1], power[maxP], power[maxP+1], power[maxP+2])
-    }
-  }
-  
-  
-  A <- integrateTrapezoid(x, y)
-  left <- integrateTrapezoid(freq, power)
-  peakSum <- sum(power[p])
-  #totalSum <- sum(power)
-  
-  if(ploting==TRUE){
-    print(paste("peak - integrate",A,"sum",sum(y),"peakValue",power[maxP],"peakSum",peakSum))
-    print(paste("ratio",A/left,"peakRatio",power[maxP]/peakSum))
-  }
-  
-  returnValue <- 0
-  if(length(p)==0){
-    returnValue <- 0
-  }else if(type==1){
-    returnValue <- power[maxP]/peakSum
-  }else if(type==2){
-    returnValue <- A/left
-  }else if(type==3){
-    returnValue <- cntDominant
-  }else if(type==4){
-    returnValue <- cntWeak
-  }
-  
-  sampling.rate <- 50
-  max_value <- max(sampling.rate/2)
-  spliting <- seq(0,max_value,max_value/10)
-  
-  if(ploting == TRUE)
-  {
-    df <- data.frame(fre = freq, perM = power)  
-    
-    graphTemp <- ggplot(df, aes(x=fre, colour="axis")) +
-      geom_line(aes(y=perM, colour="axis")) +
-      #geom_point() +
-      #geom_point(data = d2, aes(y=po,colour="red")) +
-      ggtitle(paste("Power Spectrum",title)) + 
-      #  coord_fixed(ratio=1/4) +
-      xlab("Frequency (Hz)") +
-      ylab("Power") +
-      scale_color_manual(values=c("red","blue","black","violet")) +
-      scale_x_continuous(breaks = spliting) +
-      #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
-      #scale_x_continuous(breaks = seq(start_time,end_time,(as.integer((end_time-start_time)/10)) )) +
-      #scale_x_continuous(breaks = 10) +
-      theme_bw() +
-      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
-            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
-    graphTemp <- graphTemp + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), alpha=0.2, fill="blue", inherit.aes = FALSE)        
-    graphTemp <- graphTemp + geom_vline(xintercept = df$fre[p], alpha=1, colour="red",linetype=4)
-    print(graphTemp) 
-  }
-  
-  return (returnValue)
-}
-
-
-
-getPeakFrequency <- function(data_z)
-{
-  N <- length(data_z)
-  #data_z <- data_z - mean(data_z)
-  c <- 50/N
-  max <- 0
-  mk <- 0
-  
-  for(k in 0:(N/2-1)){
-    sum<-0
-    for(n in 0:(N-1))
-    {
-      sum <-sum + data_z[n+1]*exp(-1*sqrt(as.complex(-1))*pi*k*n/N)
-    }  
-    print(Mod(sum))
-    v <- Mod(sum)
-    if(v>max)
-    {
-      max <- v
-      mk <- k
-    }
-  }
-  
-  sampling.rate = 50 
-  nUniquePts <- ceiling((N+1)/2)
-  freqArray <- (0:(nUniquePts-1)) * (sampling.rate / n)
-  
-  print(paste("k",mk,"max_value",max,"fpk",c*mk,"mt",freqArray[mk+1]))
-  
-  return (c*mk)
-}
-
-for(i in 1:length(data$x)-1){
-  #print(i)
-  if(getAutocorrelation(data$x,i)>max){
-    maxi<-i
-    max<-getAutocorrelation(data$x,i)
-  }
-}
-
-
-normalize <- function(x) {
-  a <- min(x, na.rm=TRUE)
-  b <- max(x, na.rm=TRUE)
-  (x - a)/(b - a)
-}
-
-
-getEntropy <- function(data_z)
-{
-  y <- data_z - mean(data_z)
-  y <- fft(y)
-  y <- Mod(y)^2
-  energySum <- sum(y)
-  y <- y/energySum
-  e <- -1*y*log2(y+0.000001)
-  entropy_z <- sum(e)
-  if(is.na(entropy_z)){
-    View(y)
-    View(e)
-  }
-  
-  return (entropy_z)
-}
-
-
-
-getEnergy <- function(data_x)
-{
-  y <- data_x - mean(data_x)
-  y <- fft(y)
-  y <- Mod(y)^2
-  SOSM_x <- (sum(y))/(length(y))
-}
-
-getCth <- function(data_x,th)
-{
-  Cnt<-0
-  for(i in 1:length(data_x))
-  {
-    if(data_x[i]>th)
-      Cnt <- Cnt + 1
-  }
-  
-  return (Cnt)
-}
-
-getIntegrateSignal <- function(signal)
-{
-  require("oce")
-  res<-i
-  for(i in 1:length(signal))
-  {
-    xrange <- c(1:i)
-    yrange <- signal[1:i]
-    res[i]<-integrateTrapezoid(xrange, yrange)
-  }
-  
-  return(res)
-}
-
-getCrossingAmplitudePower<-function(signal)
-{
-  idxs<-getPeakValleyIdx(signal, thresh = 0)
-  idxs <- idxs -1
-  cnt<-0
-  if(length(idxs)<=1)
-    return(0)
-  
-  if(any(is.na(signal))){
-    return (0)
-  }
-  if(length(signal)<2)
-    return (0)
-  #  print("idxs")
-  #  print(idxs)
-  cnt2 <-0
-  for(i in 2:length(idxs))
-  {
-    if(signal[idxs[i]]*signal[idxs[i-1]]<0){
-      cnt<-cnt+(abs(signal[idxs[i-1]]) + abs(signal[idxs[i]]))
-      cnt2 <- cnt2 +1
-    }
-  }
-  
-  return(cnt)
-}
-
-
-
-
-getCrossingSpacePower<-function(signal, time, beta = 10)
-{
-  idxs<-getPeakValleyIdx(signal, thresh = 0.001)
-  idxs <- idxs -1
-  cnt<-0
-  if(length(idxs)<=1)
-    return(0)
-  
-  if(any(is.na(signal))){
-    return (0)
-  }
-  if(length(signal)<2)
-    return (0)
-  #  print("idxs")
-  #  print(idxs)
-  
-  spacelist<-1
-  
-  #  print(paste("len",length(time), length(signal)))
-  #  print(idxs)
-  spidx <- 1
-  for(i in 2:length(idxs))
-  {
-    if(signal[idxs[i]]*signal[idxs[i-1]]<0){
-      spacelist[spidx] <- as.numeric(time[idxs[i]]) - as.numeric(time[idxs[i-1]])
-      spidx <- spidx + 1
-    }
-  }
-  
-  if(length(spacelist)==1)
-    return (0)
-  
-  #print(paste("len",length(spacelist),"sd", sd(spacelist)))
-  return (exp(-1*sd(spacelist)/beta/length(spacelist)))
-  
-}
-
-getCrossingKurtosisPower<-function(signal, time, beta = 100)
-{
-  require(moments)
-  idxs<-getPeakValleyIdx(signal, thresh = 0.005)
-  idxs <- idxs -1
-  cnt<-1
-  if(length(idxs)<=1)
-    return(0)
-  
-  if(any(is.na(signal))){
-    return (0)
-  }
-  if(length(signal)<2)
-    return (0)
-  #  print("idxs")
-  #  print(idxs)
-  
-  spacelist<-1
-  
-  #print(paste("len",length(time), length(signal)))
-  #print(idxs)
-  spidx <- 1
-  bins <- 3
-  for(i in 2:length(idxs))
-  {
-    if(signal[idxs[i]]*signal[idxs[i-1]]<0){
-      temp_sum <- 0
-      if( (idxs[i]>(bins)) & (idxs[i]<=(length(signal)-bins)) ){
-        data <- signal[(idxs[i]-bins):(idxs[i]+bins)]        
-        if(kurtosis(data)>=2){
-          temp_sum <- temp_sum + kurtosis(data)
-          #print(paste("1st",kurtosis(data)))
-          cnt <- cnt + 1
-        }
-      }
-      
-      if( (idxs[i-1]>(bins)) & (idxs[i-1]<(length(signal)-bins)) ){
-        data <- signal[(idxs[i-1]-bins):(idxs[i-1]+bins)]
-        if(kurtosis(data)>=2)
-        {
-          temp_sum <- temp_sum + kurtosis(data)
-          #print(paste("2nd", kurtosis(data)))
-          cnt <- cnt + 1          
-        }
-      }
-      
-      spacelist[spidx] <- temp_sum
-      spidx <- spidx + 1
-    }
-  }
-  
-  if(length(spacelist)==1)
-    return (0)
-  
-  #print(paste("len",length(spacelist),"sum", sum(spacelist), "sum/cnt", sum(spacelist)/cnt))
-  return (cnt)
-}
-
-
-getBestCase<-function(arrays, feature_type)
-{
-  res <- 0
-  switch(feature_type,
-         correlation={
-           count = 0;
-           for(i in 1:length(arrays)){
-             #print(paste(i,arrays[i]))
-             if(abs(as.double(arrays[i])) > 0.6)
-               count <- count + 1;
-           }
-           res<-count
-         },
-         entropy={
-           res <- min(arrays)
-         },
-         energy={
-           res <- max(arrays)
-         },
-         peakfreq={
-           res <- max(arrays)
-         },
-         RMS={
-           res <- min(arrays)
-         },
-         maximumAuto={
-           res <- max(arrays)
-         },
-         zerocrossingrate={
-           res <- max(arrays)
-         },
-         height1stPeakValleyAuto={
-           res <- max(arrays)
-         },
-         prominentAutoPeakValley={
-           res <- max(arrays)
-         },
-         weakpeakAutoPeakValley={
-           res <- min(arrays)
-         },
-         getProminantPeakfreq={
-           res <- mean(arrays)
-         },
-         getWeakPeakfreq={
-           res <- mean(arrays)
-         },
-         powerband = {
-           res <- max(arrays)
-         },
-         harmPeak = {
-           res <- max(arrays)
-         },
-         autocorrelationBins = {
-           res <- max(arrays)
-         },
-         getCrossingSpacePower = {
-           res <- max(arrays)
-         },
-         getCrossingKurtosisPower = {
-           res <- max(arrays)
-         },
-         crossingAmplitudePower = {
-           res <- max(arrays)
-         },
-         weakAmplitudeBins = {
-           res <- max(arrays)
-         },
-         strongAmplitudeBins = {
-           res <- max(arrays)
-         },
-         variance = {
-           res <- max(arrays)
-         }
-         
-         
-  )
-
-  
-  return(res)
-}
-
-
+# Created by jonginlee on 16 10. 04
 
 getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, thr = 0.01, type = "mag", sampling.rate = 50,
                          powerband_from=0, powerband_to=0, startLag=5, f_l=20, filtering=FALSE, selection=TRUE , filter_num =1, spanV = 0.4,
                          neith_th = 0.01,  min_th = 0.01, max_th = 0.01, b_avg = FALSE, doublecnt = FALSE, signal_type ="no_signal" ,filter_type ="low", 
                          order = 5, window_data_prev = NULL, filtering2 = FALSE, prefiltering = FALSE, prefilter_num = 1, pre_f_l = 12,
                          pre_spanV = 0.4, pre_f_l2 = 0.8, rotationBy = FALSE
-                         )
+)
 {
- 
+  
   #print(paste("feature_type", feature_type))
   #window_data$x <- window_data$x - mean(window_data$x)
   #window_data$y <- window_data$y - mean(window_data$y)
   #window_data$z <- window_data$z - mean(window_data$z)
   
   
-
-
+  
+  
   
   
   
@@ -504,15 +25,15 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
     if(prefiltering & (prefilter_num == 1)){
       bf2 <- butter(order, (2*pre_f_l)/(sampling.rate), type="low")
       
-#      bf3 <- butter(order, (2*pre_f_l2)/(sampling.rate), type="high")
+      #      bf3 <- butter(order, (2*pre_f_l2)/(sampling.rate), type="high")
       
       window_data$x <- filtfilt( bf2, window_data$x)
       window_data$y <- filtfilt( bf2, window_data$y)
       window_data$z <- filtfilt( bf2, window_data$z)
       
-#      window_data$x <- filtfilt( bf3, window_data$x)
-#      window_data$y <- filtfilt( bf3, window_data$y)
-#      window_data$z <- filtfilt( bf3, window_data$z)
+      #      window_data$x <- filtfilt( bf3, window_data$x)
+      #      window_data$y <- filtfilt( bf3, window_data$y)
+      #      window_data$z <- filtfilt( bf3, window_data$z)
       
     }else if(prefiltering & (prefilter_num == 2))
     {
@@ -541,39 +62,39 @@ getFeatureBy <- function(window_data, feature_type, opt_lag = 12, avg = FALSE, t
       window_data$z <- movingAverage(df$z, pre_spanV, TRUE)
     }
   }
-
-
-if(rotationBy){
-  trans <- preProcess(window_data[,3:5], method=c("BoxCox", "center", "scale", "pca"), thresh = 0.999999999)
-  PC <- predict(trans, window_data[,3:5])
   
-  #    temp_m<-list()
-  #    for(i2 in 1:length(window_data$x)){
-  #      temp <-  c(window_data$x[i2], window_data$y[i2], window_data$z[i2]) %*%  trans$rotation 
-  #      temp_m$x[i2] <- temp[1]
-  #      temp_m$y[i2] <- temp[2]
-  #      temp_m$z[i2] <- temp[3]
-  #print(i)
-  #    }
   
-  #    window_data$x <- as.numeric(temp_m$x)
-  #    window_data$y <- as.numeric(temp_m$y)
-  #    window_data$z <- as.numeric(temp_m$z)
-  #    if(anyNA(temp_m$x)){
-  #      print("temp_m_x")
-  #    }
-  #    if(anyNA(temp_m$y)){
-  #      print("temp_m_y")
-  #      View(window_data)
-  #    }
-  #    if(anyNA(temp_m$z)){
-  #      print("temp_m_z")
-  #      View(window_data)      
-  #    }
-  window_data <- data.frame( x = PC$PC1, y = PC$PC2, z = PC$PC3, time = window_data$time)
+  if(rotationBy){
+    trans <- preProcess(window_data[,3:5], method=c("BoxCox", "center", "scale", "pca"), thresh = 0.999999999)
+    PC <- predict(trans, window_data[,3:5])
+    
+    #    temp_m<-list()
+    #    for(i2 in 1:length(window_data$x)){
+    #      temp <-  c(window_data$x[i2], window_data$y[i2], window_data$z[i2]) %*%  trans$rotation 
+    #      temp_m$x[i2] <- temp[1]
+    #      temp_m$y[i2] <- temp[2]
+    #      temp_m$z[i2] <- temp[3]
+    #print(i)
+    #    }
+    
+    #    window_data$x <- as.numeric(temp_m$x)
+    #    window_data$y <- as.numeric(temp_m$y)
+    #    window_data$z <- as.numeric(temp_m$z)
+    #    if(anyNA(temp_m$x)){
+    #      print("temp_m_x")
+    #    }
+    #    if(anyNA(temp_m$y)){
+    #      print("temp_m_y")
+    #      View(window_data)
+    #    }
+    #    if(anyNA(temp_m$z)){
+    #      print("temp_m_z")
+    #      View(window_data)      
+    #    }
+    window_data <- data.frame( x = PC$PC1, y = PC$PC2, z = PC$PC3, time = window_data$time)
+    
+  }
   
-}
-
   
   res<-0
   if(avg == TRUE){
@@ -632,7 +153,7 @@ if(rotationBy){
       signal_x_prev <- getAutocorrelationSignal(window_data_prev$x, startLag)
       signal_x <- getAutocorrelationSignal(window_data$x, startLag)      
       signal_x <- getCrosscorrelationSignal( signal_x_prev, signal_x, startLag = 1 )
-
+      
       
       signal_y_prev <- getAutocorrelationSignal(window_data_prev$y, startLag)
       signal_y <- getAutocorrelationSignal(window_data$y, startLag)      
@@ -641,12 +162,12 @@ if(rotationBy){
       signal_z_prev <- getAutocorrelationSignal(window_data_prev$z, startLag)
       signal_z <- getAutocorrelationSignal(window_data$z, startLag)      
       signal_z <- getCrosscorrelationSignal( signal_z_prev, signal_z, startLag = 1 )
-
+      
       window_data <- data.frame( x = signal_x, y = signal_y, z = signal_z, time = window_data$time[startLag:length(window_data$time)])
       
     }
     
-
+    
     
     
     if(filtering == TRUE)
@@ -686,7 +207,7 @@ if(rotationBy){
   }
   
   
-
+  
   switch(feature_type,     
          kurtosis3D={
            require("moments")
@@ -785,7 +306,7 @@ if(rotationBy){
                else
                  max_x <- max((signal[2:length(signal)]))
                
-              res <- c(max_x)
+               res <- c(max_x)
              }
            }else{
              signal_x <- as.double(ifft(log(abs(fft(window_data$x)))))
@@ -811,8 +332,8 @@ if(rotationBy){
                
                res <- c( max_x, max_y, max_z )
              }
-
-
+             
+             
            }
          },
          prominentCepstrumPeak={
@@ -821,7 +342,7 @@ if(rotationBy){
              if(any(is.na(signal)))
                res <- c(0)
              else
-              res <- c( getNumPeaksBy(signal, neith_th, min_th, "peaks", "prominent") )
+               res <- c( getNumPeaksBy(signal, neith_th, min_th, "peaks", "prominent") )
            }
            else{
              signal_x <- as.double(ifft(log(abs(fft(window_data$x)))))
@@ -831,9 +352,9 @@ if(rotationBy){
                res <- c(0,0,0)
              else
                res <- c( getNumPeaksBy(signal_x, neith_th, min_th, "peaks", "prominent"), # 0 / 0.1
-                       getNumPeaksBy(signal_y, neith_th, min_th, "peaks", "prominent"),
-                       getNumPeaksBy(signal_z, neith_th, min_th, "peaks", "prominent")
-                     )
+                         getNumPeaksBy(signal_y, neith_th, min_th, "peaks", "prominent"),
+                         getNumPeaksBy(signal_z, neith_th, min_th, "peaks", "prominent")
+               )
            }
            
          },
@@ -854,8 +375,8 @@ if(rotationBy){
                res <- c(0,0,0)
              else
                res <- c( getNumPeaksBy(signal_x, neith_th, max_th, "peaks", "weak"),
-                       getNumPeaksBy(signal_y, neith_th, max_th, "peaks", "weak"),
-                       getNumPeaksBy(signal_z, neith_th, max_th, "peaks", "weak")
+                         getNumPeaksBy(signal_y, neith_th, max_th, "peaks", "weak"),
+                         getNumPeaksBy(signal_z, neith_th, max_th, "peaks", "weak")
                )
            }
            
@@ -876,10 +397,10 @@ if(rotationBy){
              if(any(is.na(signal_x), is.na(signal_y), is.na(signal_z)))
                res <- c(0,0,0)
              else
-              res <- c( getNumPeaksBy(signal_x, neith_th, min_th, "num"), # 0.05, 0.05
-                       getNumPeaksBy(signal_y, neith_th, min_th, "num"),
-                       getNumPeaksBy(signal_z, neith_th, min_th, "num")
-              )
+               res <- c( getNumPeaksBy(signal_x, neith_th, min_th, "num"), # 0.05, 0.05
+                         getNumPeaksBy(signal_y, neith_th, min_th, "num"),
+                         getNumPeaksBy(signal_z, neith_th, min_th, "num")
+               )
            }
            
          },
@@ -899,8 +420,8 @@ if(rotationBy){
              if(any(is.na(signal_x), is.na(signal_y), is.na(signal_z)))
                res <- c(0,0,0)
              else
-              res <- c( getCrossingAmplitudePower(signal_x), getCrossingAmplitudePower(signal_y), getCrossingAmplitudePower(signal_z) )
-
+               res <- c( getCrossingAmplitudePower(signal_x), getCrossingAmplitudePower(signal_y), getCrossingAmplitudePower(signal_z) )
+             
            }
            
          },
@@ -932,7 +453,7 @@ if(rotationBy){
              )
              if(b_avg==TRUE)
                res <- getBestCase(res, feature_type)
-
+             
            }
          },
          weakpeakAutoPeakValley={
@@ -1054,7 +575,7 @@ if(rotationBy){
              res <- c( getNumPeaksBy(window_data$x, neith_th, min_th, "num") ,
                        getNumPeaksBy(window_data$y, neith_th, min_th, "num") ,
                        getNumPeaksBy(window_data$z, neith_th, min_th, "num") 
-                       )
+             )
            }
          },
          prominentAuto={
@@ -1064,7 +585,7 @@ if(rotationBy){
              res <- c( getNumPeaksBy(window_data$x, neith_th, min_th, "peaks", "prominent"), # 0.05 -> 0.1
                        getNumPeaksBy(window_data$y, neith_th, min_th, "peaks", "prominent"),
                        getNumPeaksBy(window_data$z, neith_th, min_th, "peaks", "prominent")
-                       )
+             )
            }
          },
          weakpeakAuto={
@@ -1074,7 +595,7 @@ if(rotationBy){
              res <- c( getNumPeaksBy(window_data$x, neith_th, max_th, "peaks", "weak"),
                        getNumPeaksBy(window_data$y, neith_th, max_th, "peaks", "weak"),
                        getNumPeaksBy(window_data$z, neith_th, max_th, "peaks", "weak")
-                       )
+             )
            }
          },
          maximumAuto={
@@ -1343,7 +864,7 @@ if(rotationBy){
          },
          correlation={
            res <- c(cor(window_data$x, window_data$y),cor(window_data$x, window_data$z),cor(window_data$y, window_data$z))
-            
+           
            if(b_avg == TRUE)
            {
              res <- getBestCase(res,  feature_type)
@@ -1454,45 +975,3 @@ if(rotationBy){
   #print(paste("feature Type ", feature_type, " opt_lag = ", opt_lag, ", res ", res))
   return (res)
 }
-
-
-getFeaturesFromEpoch <- function(df, start_milli, end_milli, spanValue, title, type)
-{
-  
-  epoch = subset(df, (time_milli>=start_milli) & (time_milli<=end_milli))  
-  #View(epoch)
-  if(type=="detail")
-  {
-    epoch$saxis_loess <- predict(loess(z~time_milli,epoch,span=spanValue), epoch$time_milli)
-    returnValue <- ggplot(epoch, aes(x=time_milli, y=saxis_loess)) +
-      geom_line() +
-      geom_point() +
-      #  geom_line(aes(y=x, col="X")) +
-      #    geom_point(aes(y=x, col="X")) +
-      #    geom_line(aes(y=y, col="Y")) +
-      #    geom_line(aes(y=z, col="Z")) +
-      ggtitle(title) + 
-      #  coord_fixed(ratio=1/4) +
-      xlab("time(milli)") +
-      ylab("Acceleration(g)")+
-      #  scale_y_continuous(breaks = seq(min_value,max_value,(as.integer((max_value-min_value)/10)) )) +
-      #    scale_x_continuous(breaks = spliting) +
-      theme_bw() +
-      theme(panel.border = element_blank(), axis.line = element_line(colour="black"), 
-            axis.text.x = element_text(angle=40,hjust=1,vjust=1))
-    
-  }else if(type=="getfeatures")
-  {
-    returnValue <- c(start_milli,end_milli,
-                     getFeature(epoch,"mean"),
-                     getFeature(epoch,"entropy"),
-                     getFeature(epoch,"energy"),
-                     getFeature(epoch,"correlation"),
-                     getFeature(epoch,"autocorrelation")
-    )
-    
-  }
-  
-  return (returnValue)
-}
-

@@ -1,10 +1,8 @@
+# Created by jonginlee on 16. 10. 04.
 
-
-
-list = c("Accel","Magnet","Gyro","Hum","Temp","Press","orientation","Linearaccel","HeartRate")
-sensor_name_list = c("Accelerometer","Magnetometer", "Gyroscope", "Humidity", "Temperature", "Pressure","Orientation(x-azimuth,y-pitch,z-roll)","Linear Accelerometer" ,"Heart Rate")
-y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity (rad/s)", "relative humidity (RH)","celsius degrees (°C)", "hectopascal (hPa)", "rotation round", "acceleration (m/s^2)", "beats per minute (bpm)")
-
+list = c("accelerometer","magnetometer","Gyro","Hum","Temp","Press","orientation","Linearaccel","HeartRate","RotationVector")
+sensor_name_list = c("Accelerometer","Magnetometer", "Gyroscope", "Humidity", "Temperature", "Pressure","Orientation(x-azimuth,y-pitch,z-roll)","Linear Accelerometer" ,"Heart Rate", "Rotation Vector")
+y_label_list = c("acceleration (m/s^2)", "micro-Tesla (uT) ", "angular velocity (rad/s)", "relative humidity (RH)","celsius degrees (°C)", "hectopascal (hPa)", "rotation round", "acceleration (m/s^2)", "beats per minute (bpm)", "Rotation Vector Value")
 
 createPlot <- function(data, idx, graph_title, saveFile, source_date, 
                          set_btw=FALSE, start_hour=1.1, end_hour=1.1, type=1, spanValueraw = 0.5, window_step=64 ,windowing=FALSE, cutoff=FALSE, f_l=0.3, butter_type="high", showing_legend = TRUE) {
@@ -26,6 +24,9 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
   
   if(set_btw)
     graph_title <- paste(graph_title, "(", start_hour, " ~ ", end_hour, ")")
+  else
+    graph_title <- paste(graph_title)
+  
   
   data.sub <- subset(data.sub,grepl(list[idx], data.sub$type))
   
@@ -66,7 +67,7 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
       geom_line(aes(y=y, colour="Y")) +
       geom_line(aes(y=z, colour="Z")) +
       geom_line(aes(y=mag, colour="_Magnitude")) + 
-      ggtitle(paste(graph_title," (",sensor_name_list[idx],")","(range - ",start_hour," ~ ",end_hour,")",sep="")) + 
+      ggtitle(paste(graph_title," (",sensor_name_list[idx],")",sep="")) + 
       scale_color_manual(values=c("red","blue","black","violet")) +
       xlab(xlablename) +
       ylab(y_label_list[idx]) +
@@ -261,5 +262,5 @@ createPlot <- function(data, idx, graph_title, saveFile, source_date,
     returnValue <- returnValue + theme(legend.position="none")
 
 
-  return (returnValue)
+  return (ggplotly(returnValue))
 }
