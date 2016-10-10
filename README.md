@@ -1,7 +1,9 @@
 # PatbingsuR
 This repository contains the source code for analyzing raw data of sensors in smartwatches(Android Wear).
-https://player.vimeo.com/video/185487058
 
+## Demo
+[![Demo](https://cloud.githubusercontent.com/assets/5574609/19226126/f00056f6-8ee1-11e6-8fe6-421aa389d189.gif
+)](https://vimeo.com/185487058)
 
 ## 0. required library & sample data set
 ### 0.1 required library (you can install below library with 'install.packages(library_name)' )
